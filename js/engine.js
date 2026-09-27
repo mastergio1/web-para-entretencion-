@@ -55,18 +55,34 @@ function adaptacion(f, arena) {
   return 1;
 }
 
-function poder(f, arena) {
-  return calidad(f) * Math.pow(f.peso, EXPONENTE_PESO) * adaptacion(f, arena);
+function pesoCombate(f) {
+  return f.pesoEfectivo ?? f.peso;
+}
+
+/* Ventaja especial de f contra un rival concreto (ej: abejas vs elefante). */
+function especial(f, rival) {
+  return (f.especiales || []).find((e) => e.vs.includes(rival.id));
+}
+
+function poder(f, arena, rival) {
+  const esp = rival && especial(f, rival);
+  return calidad(f) * Math.pow(pesoCombate(f), EXPONENTE_PESO) * adaptacion(f, arena) * (esp ? esp.mult : 1);
 }
 
 function probabilidad(a, b, arena) {
-  const pa = Math.pow(poder(a, arena), K);
-  const pb = Math.pow(poder(b, arena), K);
+  const pa = Math.pow(poder(a, arena, b), K);
+  const pb = Math.pow(poder(b, arena, a), K);
   return pa / (pa + pb);
 }
 
 function fmtNum(n) {
   return n.toLocaleString("es-ES", { maximumFractionDigits: 1 });
+}
+
+function fmtPeso(kg) {
+  if (kg >= 1) return fmtNum(kg) + " kg";
+  if (kg >= 0.001) return fmtNum(kg * 1000) + " g";
+  return fmtNum(kg * 1e6) + " mg";
 }
 
 /* Razones legibles de por qué gana uno u otro, ordenadas por impacto. */
@@ -83,14 +99,27 @@ function razones(a, b, arena) {
     else if (x.hogar.includes(arena) && !y.hogar.includes(arena)) add(2, x.id, `${x.nombre} juega de local en ${nombreArena}.`);
   });
 
-  // Peso
-  const [pesado, liviano] = a.peso >= b.peso ? [a, b] : [b, a];
-  const ratio = pesado.peso / liviano.peso;
-  if (ratio >= 1.4) {
-    add(Math.min(9, 2 + Math.log2(ratio) * 1.5), pesado.id,
-      `${pesado.nombre} pesa ${ratio >= 10 ? fmtNum(Math.round(ratio)) : fmtNum(ratio)} veces más (${fmtNum(pesado.peso)} kg vs ${fmtNum(liviano.peso)} kg).`);
-  } else {
-    add(1, null, `Pesan parecido (${fmtNum(a.peso)} kg vs ${fmtNum(b.peso)} kg): pelea pareja en tamaño.`);
+  // Especiales
+  [[a, b], [b, a]].forEach(([x, y]) => {
+    const e = especial(x, y);
+    if (e) add(8, x.id, e.texto);
+  });
+
+  // Enjambres
+  [a, b].forEach((x) => {
+    if (x.enjambre) add(4, x.id, `${x.nombre} son ${x.cantidad}: no se les puede noquear de un golpe.`);
+  });
+
+  // Peso (no aplica si hay enjambres: su peso real engaña)
+  if (!a.enjambre && !b.enjambre) {
+    const [pesado, liviano] = a.peso >= b.peso ? [a, b] : [b, a];
+    const ratio = pesado.peso / liviano.peso;
+    if (ratio >= 1.4) {
+      add(Math.min(9, 2 + Math.log2(ratio) * 1.5), pesado.id,
+        `${pesado.nombre} pesa ${ratio >= 10 ? fmtNum(Math.round(ratio)) : fmtNum(ratio)} veces más (${fmtPeso(pesado.peso)} vs ${fmtPeso(liviano.peso)}).`);
+    } else {
+      add(1, null, `Pesan parecido (${fmtPeso(a.peso)} vs ${fmtPeso(b.peso)}): pelea pareja en tamaño.`);
+    }
   }
 
   // Mordida
@@ -136,5 +165,5 @@ function veredicto(p) {
 }
 
 if (typeof module !== "undefined") {
-  module.exports = { calidad, adaptacion, poder, probabilidad, razones, veredicto };
+  module.exports = { calidad, adaptacion, poder, probabilidad, razones, veredicto, fmtPeso };
 }

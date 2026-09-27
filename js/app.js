@@ -10,6 +10,8 @@ const ATRIBUTOS = [
   ["inteligencia", "Inteligencia"],
 ];
 
+let ultimaPelea = null;
+
 const byId = Object.fromEntries(LUCHADORES.map((f) => [f.id, f]));
 
 const state = {
@@ -42,6 +44,9 @@ function claveDuelo() {
 function fmt(n) {
   return n.toLocaleString("es-ES", { maximumFractionDigits: 1 });
 }
+function tamanoCorto(f) {
+  return f.enjambre ? f.cantidad : fmtPeso(f.peso);
+}
 function chips(container, items, activo, onClick) {
   container.innerHTML = "";
   for (const [key, label] of items) {
@@ -65,7 +70,7 @@ function barras(f) {
 function datosReales(f) {
   return `
     <ul class="facts">
-      <li><span>⚖️ Peso</span><b>${fmt(f.peso)} kg</b></li>
+      <li><span>⚖️ Peso</span><b>${fmtPeso(f.peso)}</b></li>
       <li><span>📏 Tamaño</span><b>${fmt(f.largo)} m</b></li>
       <li><span>💨 Velocidad</span><b>${fmt(f.velocidad)} km/h</b></li>
       <li><span>🦷 Mordida</span><b>${f.mordida ? fmt(f.mordida) + " PSI" : "—"}</b></li>
@@ -90,7 +95,7 @@ function renderSlot(side) {
   el.innerHTML = `
     <span class="big-emoji">${f.emoji}</span>
     <strong>${f.nombre}</strong>
-    <small>${fmt(f.peso)} kg · ${CATEGORIAS[f.categoria].emoji} ${CATEGORIAS[f.categoria].nombre}</small>
+    <small>${tamanoCorto(f)} · ${CATEGORIAS[f.categoria].emoji} ${CATEGORIAS[f.categoria].nombre}</small>
     <em>Cambiar</em>`;
 }
 
@@ -127,7 +132,7 @@ function renderPicker() {
     const b = document.createElement("button");
     b.className = "pick" + (f.id === otro.id ? " disabled" : "");
     b.disabled = f.id === otro.id;
-    b.innerHTML = `<span>${f.emoji}</span><strong>${f.nombre}</strong><small>${fmt(f.peso)} kg</small>`;
+    b.innerHTML = `<span>${f.emoji}</span><strong>${f.nombre}</strong><small>${tamanoCorto(f)}</small>`;
     b.onclick = () => {
       state[state.pickingSide] = f;
       $("#picker").close();
@@ -141,6 +146,8 @@ function renderPicker() {
 
 /* ───── pelea ───── */
 function ocultarResultado() {
+  if (pelea.actual) pelea.actual.cancelar();
+  ultimaPelea = null;
   $("#result").hidden = true;
   $("#compare").hidden = true;
 }
@@ -160,10 +167,12 @@ function pelear() {
 
   const res = $("#result");
   res.innerHTML = `
+    <div id="fight" class="fight"></div>
+    <div id="analysis" class="analysis" hidden>
     <div class="verdict">
-      <p class="tag">${veredicto(p)}</p>
+      <p class="tag">📊 Según los datos: ${veredicto(p)}</p>
       <div class="winner"><span class="big-emoji">${ganador.emoji}</span>
-        <div><small>Gana (probablemente)</small><h3>${ganador.nombre}</h3>
+        <div><small>El favorito</small><h3>${ganador.nombre}</h3>
         <p>Ganaría <b>${Math.round(pg * 100)} de cada 100</b> peleas en ${ARENAS[arena].nombre.toLowerCase()}.</p></div>
       </div>
       <div class="prob">
@@ -184,17 +193,34 @@ function pelear() {
       </div>
       <p id="vote-res" class="muted"></p>
       <button id="btn-share" class="btn ghost small">📋 Copiar para el grupo</button>
+    </div>
     </div>`;
   res.hidden = false;
-  res.classList.remove("pop");
-  void res.offsetWidth;
-  res.classList.add("pop");
+  $("#compare").hidden = true;
 
   res.querySelectorAll("[data-v]").forEach((btn) => (btn.onclick = () => votar(btn.dataset.v)));
   $("#btn-share").onclick = () => compartir(ganador, pg);
   renderVotos();
-  renderComparacion();
   res.scrollIntoView({ behavior: "smooth", block: "start" });
+  correrAnimacion(p);
+}
+
+async function correrAnimacion(p) {
+  const { a, b, arena } = state;
+  const r = await animarPelea($("#fight"), a, b, arena, p);
+  if (!r) return;
+  ultimaPelea = r;
+  const rev = document.createElement("button");
+  rev.className = "btn primary small";
+  rev.textContent = "🔁 Revancha";
+  rev.onclick = () => correrAnimacion(p);
+  r.btns.appendChild(rev);
+  const analisis = $("#analysis");
+  if (analisis.hidden) {
+    analisis.hidden = false;
+    analisis.classList.add("pop");
+    renderComparacion();
+  }
 }
 
 function votar(id) {
@@ -221,8 +247,11 @@ function renderVotos() {
 
 function compartir(ganador, pg) {
   const { a, b, arena } = state;
+  const resultado = ultimaPelea
+    ? `En nuestra pelea ganó ${ultimaPelea.ganador.nombre}${ultimaPelea.sorpresa ? " (¡SORPRESA!)" : ""}. `
+    : "";
   const texto = `🥊 ¿Quién ganaría? ${a.emoji} ${a.nombre} vs ${b.emoji} ${b.nombre} en ${ARENAS[arena].nombre}\n` +
-    `Según los datos: gana ${ganador.nombre} (${Math.round(pg * 100)}%). ¿Tú qué dices?\n${location.href}`;
+    `${resultado}Según los datos: gana ${ganador.nombre} (${Math.round(pg * 100)}%). ¿Tú qué dices?\n${location.href}`;
   const ok = () => ($("#btn-share").textContent = "✅ ¡Copiado!");
   if (navigator.clipboard) navigator.clipboard.writeText(texto).then(ok, () => prompt("Copia esto:", texto));
   else prompt("Copia esto:", texto);
@@ -233,7 +262,8 @@ function renderComparacion() {
   const filaDato = (label, va, vb, unidad) => {
     const ga = va != null && (vb == null || va > vb);
     const gb = vb != null && (va == null || vb > va);
-    return `<tr><td class="${ga ? "win" : ""}">${va != null ? fmt(va) + unidad : "—"}</td><th>${label}</th><td class="${gb ? "win" : ""}">${vb != null ? fmt(vb) + unidad : "—"}</td></tr>`;
+    const f = (v) => (v == null ? "—" : typeof unidad === "function" ? unidad(v) : fmt(v) + unidad);
+    return `<tr><td class="${ga ? "win" : ""}">${f(va)}</td><th>${label}</th><td class="${gb ? "win" : ""}">${f(vb)}</td></tr>`;
   };
   const filaAttr = ([k, label]) => `
     <tr><td><div class="bar rev"><i style="width:${a[k]}%"></i></div></td>
@@ -245,7 +275,7 @@ function renderComparacion() {
     <table>
       <thead><tr><th class="ta">${a.emoji} ${a.nombre}</th><th></th><th class="tb">${b.emoji} ${b.nombre}</th></tr></thead>
       <tbody>
-        ${filaDato("Peso", a.peso, b.peso, " kg")}
+        ${filaDato("Peso", a.peso, b.peso, fmtPeso)}
         ${filaDato("Tamaño", a.largo, b.largo, " m")}
         ${filaDato("Velocidad", a.velocidad, b.velocidad, " km/h")}
         ${filaDato("Mordida", a.mordida, b.mordida, " PSI")}
@@ -285,7 +315,7 @@ function renderRoster() {
       (f) => `
       <article class="card">
         <header><span class="big-emoji">${f.emoji}</span><div><h3>${f.nombre}</h3>
-          <small>${CATEGORIAS[f.categoria].emoji} ${CATEGORIAS[f.categoria].nombre}</small></div></header>
+          <small>${CATEGORIAS[f.categoria].emoji} ${CATEGORIAS[f.categoria].nombre}${f.enjambre ? " · 👥 " + f.cantidad : ""}</small></div></header>
         ${datosReales(f)}
         <div class="bars">${barras(f)}</div>
         <p><b>🗡️</b> ${f.armas}</p>
