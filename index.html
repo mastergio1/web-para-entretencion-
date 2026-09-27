@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>¿Quién Ganaría?</title>
+  <meta name="description" content="El debate de siempre entre amigos: ¿quién ganaría en una pelea? Animales y humanos con estadísticas reales." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Bangers&family=Archivo:wght@400;600;800;900&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+  <header class="hero">
+    <p class="eyebrow">Esta noche · Pelea estelar · Sin reglamento</p>
+    <h1>¿Quién <span>ganaría</span>?</h1>
+    <p class="lede">El debate de siempre entre amigos, ahora con datos reales. Elige dos luchadores, el terreno y un arma si quieres. Después, que empiece la discusión.</p>
+  </header>
+
+  <main>
+    <section class="arena-picker" aria-label="Elegir arena">
+      <h2><span class="paso">1</span> El terreno</h2>
+      <div id="arenas" class="chips"></div>
+      <p id="arena-desc" class="muted"></p>
+    </section>
+
+    <section class="ring" aria-label="Luchadores">
+      <h2><span class="paso">2</span> Los luchadores</h2>
+      <div class="ring-grid">
+        <div class="corner">
+          <button class="slot" id="slot-a" data-side="a"></button>
+          <label class="arma-pick">Arma <select id="arma-a" aria-label="Arma del luchador rojo"></select></label>
+          <small class="arma-info" id="arma-info-a"></small>
+        </div>
+        <div class="vs">VS</div>
+        <div class="corner">
+          <button class="slot" id="slot-b" data-side="b"></button>
+          <label class="arma-pick">Arma <select id="arma-b" aria-label="Arma del luchador azul"></select></label>
+          <small class="arma-info" id="arma-info-b"></small>
+        </div>
+      </div>
+      <div class="actions">
+        <button id="btn-random" class="btn ghost">Pelea aleatoria</button>
+        <button id="btn-fight" class="btn primary">¡A pelear!</button>
+      </div>
+    </section>
+
+    <section id="result" class="result" hidden aria-live="polite"></section>
+
+    <section class="compare" id="compare" hidden aria-label="Comparación de estadísticas"></section>
+
+    <section class="fiesta" aria-labelledby="fiesta-titulo">
+      <h2 id="fiesta-titulo">Modo fiesta</h2>
+      <p class="muted intro">Anoten sus nombres y pásense el celular. Antes de cada pelea todos apuestan. Acertar da 1 punto; acertar a un ganador que tenía menos de 35% da 3.</p>
+      <form id="fiesta-form" class="fiesta-form">
+        <input id="fiesta-nombre" type="text" placeholder="Nombre de un amigo" maxlength="20" autocomplete="off" aria-label="Nombre del jugador" />
+        <button class="btn small" type="submit">Agregar jugador</button>
+      </form>
+      <ol id="fiesta-tabla" class="tabla"></ol>
+      <button id="fiesta-reset" class="btn ghost small" type="button" hidden>Poner puntos en cero</button>
+    </section>
+
+    <section class="torneo" aria-labelledby="torneo-titulo">
+      <h2 id="torneo-titulo">Torneo de la noche</h2>
+      <p class="muted intro">Ocho luchadores al azar, eliminación directa y un terreno distinto en cada pelea. Si hay jugadores en el modo fiesta, también apuestan acá.</p>
+      <div class="torneo-acciones">
+        <button id="torneo-siguiente" class="btn primary small" type="button">Siguiente pelea</button>
+        <button id="torneo-rapido" class="btn ghost small" type="button">Simular el resto</button>
+        <button id="torneo-nuevo" class="btn ghost small" type="button">Sortear otros 8</button>
+      </div>
+      <div class="bracket-scroll"><div id="bracket" class="bracket"></div></div>
+      <div id="torneo-pelea" class="fight"></div>
+    </section>
+
+    <section class="opinion" aria-labelledby="opinion-titulo">
+      <h2 id="opinion-titulo">Lo que opina la gente</h2>
+      <p id="opinion-origen" class="muted intro"></p>
+      <div id="opinion-listas" class="opinion-listas"></div>
+    </section>
+
+    <section class="roster-section" aria-label="Enciclopedia de luchadores">
+      <h2>Enciclopedia de luchadores</h2>
+      <div id="roster-filters" class="chips"></div>
+      <div id="roster" class="roster"></div>
+    </section>
+  </main>
+
+  <dialog id="picker">
+    <form method="dialog" class="picker-head">
+      <h3 id="picker-title">Elige un luchador</h3>
+      <button class="close" aria-label="Cerrar">✕</button>
+    </form>
+    <input id="picker-search" type="search" placeholder="Buscar… (ej: oso, tigre)" autocomplete="off" />
+    <div id="picker-filters" class="chips small"></div>
+    <div id="picker-list" class="picker-list"></div>
+  </dialog>
+
+  <footer>
+    <p>Pesos, velocidades y fuerza de mordida son datos reales aproximados. Los atributos 0-100 son estimaciones para el juego.
+    Los humanos de distintos países son, en el fondo, el mismo humano: solo cambian la altura y el peso promedio… y los chistes.
+    Esto es entretenimiento: ningún animal (ni fan del K-pop) fue lastimado en la creación de esta web.</p>
+  </footer>
+
+  <script src="js/data.js"></script>
+  <script src="js/engine.js"></script>
+  <script src="js/armas.js"></script>
+  <script src="js/golpes.js"></script>
+  <script src="js/fight.js"></script>
+  <script src="js/votos.js"></script>
+  <script src="js/fiesta.js"></script>
+  <script src="js/torneo.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
