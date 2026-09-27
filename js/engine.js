@@ -66,7 +66,7 @@ function especial(f, rival) {
 
 function poder(f, arena, rival) {
   const esp = rival && especial(f, rival);
-  return calidad(f) * Math.pow(pesoCombate(f), EXPONENTE_PESO) * adaptacion(f, arena) * (esp ? esp.mult : 1);
+  return calidad(f) * Math.pow(pesoCombate(f), EXPONENTE_PESO) * adaptacion(f, arena) * (esp ? esp.mult : 1) * (f.multArma || 1);
 }
 
 function probabilidad(a, b, arena) {

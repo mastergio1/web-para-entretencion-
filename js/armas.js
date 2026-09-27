@@ -2,23 +2,24 @@
  * Armas rudimentarias.
  *
  * Cualquier luchador puede recibir un arma… pero ¿sabrá usarla?
- *   ataque / defensa: bonus si logra usarla
+ *   poder:            multiplicador de poder de combate si logra usarla (x2 = mucho más peligroso)
+ *   ataque / defensa: bonus a los atributos si logra usarla
  *   dificultad:       multiplica la probabilidad de saber usarla (arco = difícil)
  *   golpe:            cómo se narra un ataque con el arma
  */
 const ARMAS = {
-  palo: { nombre: "Palo", articulo: "el palo", lo: "lo", emoji: "🪵", ataque: 10, defensa: 0, dificultad: 1, golpe: "un palazo" },
-  piedra: { nombre: "Piedra", articulo: "la piedra", lo: "la", emoji: "🪨", ataque: 12, defensa: 0, dificultad: 1, golpe: "un piedrazo" },
-  lanza: { nombre: "Lanza", articulo: "la lanza", lo: "la", emoji: "🔱", ataque: 22, defensa: 5, dificultad: 0.8, golpe: "un lanzazo" },
-  machete: { nombre: "Machete", articulo: "el machete", lo: "lo", emoji: "🔪", ataque: 25, defensa: 0, dificultad: 0.9, golpe: "un machetazo" },
-  hacha: { nombre: "Hacha", articulo: "el hacha", lo: "la", emoji: "🪓", ataque: 25, defensa: 0, dificultad: 0.9, golpe: "un hachazo" },
-  bate: { nombre: "Bate", articulo: "el bate", lo: "lo", emoji: "🏏", ataque: 18, defensa: 0, dificultad: 1, golpe: "un batazo" },
-  sarten: { nombre: "Sartén", articulo: "la sartén", lo: "la", emoji: "🍳", ataque: 12, defensa: 8, dificultad: 1, golpe: "un sartenazo" },
-  silla: { nombre: "Silla plegable", articulo: "la silla plegable", lo: "la", emoji: "🪑", ataque: 15, defensa: 5, dificultad: 1, golpe: "un sillazo estilo lucha libre" },
-  escudo: { nombre: "Escudo de madera", articulo: "el escudo", lo: "lo", emoji: "🛡️", ataque: 3, defensa: 25, dificultad: 1, golpe: "un escudazo" },
-  arco: { nombre: "Arco y flechas", articulo: "el arco", lo: "lo", emoji: "🏹", ataque: 22, defensa: 0, dificultad: 0.6, golpe: "un flechazo" },
-  boomerang: { nombre: "Boomerang", articulo: "el boomerang", lo: "lo", emoji: "🪃", ataque: 10, defensa: 0, dificultad: 0.6, golpe: "un boomerang (que sí volvió)" },
-  chancla: { nombre: "Chancla", articulo: "la chancla", lo: "la", emoji: "🩴", ataque: 5, defensa: 0, dificultad: 1, golpe: "un chanclazo" },
+  palo: { nombre: "Palo", articulo: "el palo", lo: "lo", poder: 1.3, emoji: "🪵", ataque: 10, defensa: 0, dificultad: 1, golpe: "un palazo" },
+  piedra: { nombre: "Piedra", articulo: "la piedra", lo: "la", poder: 1.35, emoji: "🪨", ataque: 12, defensa: 0, dificultad: 1, golpe: "un piedrazo" },
+  lanza: { nombre: "Lanza", articulo: "la lanza", lo: "la", poder: 1.9, emoji: "🔱", ataque: 22, defensa: 5, dificultad: 0.8, golpe: "un lanzazo" },
+  machete: { nombre: "Machete", articulo: "el machete", lo: "lo", poder: 2.0, emoji: "🔪", ataque: 25, defensa: 0, dificultad: 0.9, golpe: "un machetazo" },
+  hacha: { nombre: "Hacha", articulo: "el hacha", lo: "la", poder: 2.0, emoji: "🪓", ataque: 25, defensa: 0, dificultad: 0.9, golpe: "un hachazo" },
+  bate: { nombre: "Bate", articulo: "el bate", lo: "lo", poder: 1.55, emoji: "🏏", ataque: 18, defensa: 0, dificultad: 1, golpe: "un batazo" },
+  sarten: { nombre: "Sartén", articulo: "la sartén", lo: "la", poder: 1.4, emoji: "🍳", ataque: 12, defensa: 8, dificultad: 1, golpe: "un sartenazo" },
+  silla: { nombre: "Silla plegable", articulo: "la silla plegable", lo: "la", poder: 1.5, emoji: "🪑", ataque: 15, defensa: 5, dificultad: 1, golpe: "un sillazo estilo lucha libre" },
+  escudo: { nombre: "Escudo de madera", articulo: "el escudo", lo: "lo", poder: 1.45, emoji: "🛡️", ataque: 3, defensa: 25, dificultad: 1, golpe: "un escudazo" },
+  arco: { nombre: "Arco y flechas", articulo: "el arco", lo: "lo", poder: 1.9, emoji: "🏹", ataque: 22, defensa: 0, dificultad: 0.6, golpe: "un flechazo" },
+  boomerang: { nombre: "Boomerang", articulo: "el boomerang", lo: "lo", poder: 1.35, emoji: "🪃", ataque: 10, defensa: 0, dificultad: 0.6, golpe: "un boomerang (que sí volvió)" },
+  chancla: { nombre: "Chancla", articulo: "la chancla", lo: "la", poder: 1.15, emoji: "🩴", ataque: 5, defensa: 0, dificultad: 1, golpe: "un chanclazo" },
 };
 
 /* Qué tan probable es que cada luchador sepa usar un arma (0-1), con su justificación real (si la hay). */
@@ -57,9 +58,9 @@ function probUsoArma(f, armaId) {
 function conArma(f, armaId) {
   if (!armaId) return f;
   const w = ARMAS[armaId];
-  let ataque = f.ataque + w.ataque;
-  if (armaId === "chancla" && f.id === "latino") ataque += 30; // chancla en manos expertas
-  return { ...f, ataque, defensa: f.defensa + w.defensa };
+  let multArma = w.poder;
+  if (armaId === "chancla" && f.id === "latino") multArma = 2.2; // chancla en manos expertas
+  return { ...f, ataque: f.ataque + w.ataque, defensa: f.defensa + w.defensa, multArma };
 }
 
 /*
@@ -77,6 +78,14 @@ function probabilidadConArmas(a, b, arena, armaA, armaB) {
     }
   }
   return p;
+}
+
+/* Chances de A sin arma vs. si la usa (para mostrar cuánto cambia el arma). */
+function impactoArma(f, rival, arena, armaId, armaRival, esA) {
+  const pSin = probabilidadConArmas(esA ? f : rival, esA ? rival : f, arena, esA ? null : armaRival, esA ? armaRival : null);
+  const fArmado = conArma(f, armaId);
+  const pCon = probabilidadConArmas(esA ? fArmado : rival, esA ? rival : fArmado, arena, esA ? null : armaRival, esA ? armaRival : null);
+  return esA ? [pSin, pCon] : [1 - pSin, 1 - pCon];
 }
 
 /* ───── narración ───── */

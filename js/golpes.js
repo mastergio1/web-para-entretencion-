@@ -16,7 +16,7 @@ const GOLPES = {
   komodo: [["una mordida venenosa", "🧪"], ["un coletazo", "💥"], ["un lengüetazo amenazante", "👅"]],
   tejon: [["un ataque sin miedo alguno", "😤"], ["un arañazo", "🐾"], ["una mordida kamikaze", "🦷"]],
   tigre: [["un zarpazo", "🐾"], ["una mordida a la nuca", "🦷"], ["un salto emboscada", "💥"]],
-  gorila: [["un golpe de pecho y puñetazo", "👊"], ["un manotazo", "💥"], ["un lanzamiento de rama", "🪵"]],
+  gorila: [["un golpe de pecho y puñetazo", "👊"], ["un manotazo", "💥"], ["una rama voladora", "🪵"]],
   jaguar: [["una mordida al cráneo", "🦷"], ["un salto desde un árbol", "🌳"], ["un zarpazo", "🐾"]],
   chimpance: [["una mordida furiosa", "🦷"], ["un lanzamiento de… mejor no decirlo", "💩"], ["un jalón de brazos", "💪"]],
   anaconda: [["un abrazo constrictor", "🌀"], ["una mordida de agarre", "🦷"], ["un apretón mortal", "🌀"]],
@@ -56,6 +56,22 @@ const GOLPES = {
   chino: [["una patada de película de Jackie Chan", "🦶"], ["un ataque con palillos", "🥢"], ["un movimiento de Tai Chi del abuelo", "☯️"]],
   japones: [["una reverencia seguida de llave de judo", "🙇"], ["un karatazo", "🥋"], ["un '¡sumimasen!' y golpe", "💥"]],
   coreano: [["una patada de taekwondo", "🦶"], ["una táctica del servicio militar", "🎖️"], ["un corazón con los dedos (distracción)", "🫰"]],
+  estadounidense: [["un grito de ¡FREEDOM! a todo pulmón", "📢"], ["una hamburguesa lanzada a 100 km/h", "💥"], ["una demanda por daños y perjuicios", "📜"]],
+  canadiense: [["un gancho de hockey (seguido de un 'sorry')", "👊"], ["un empujón contra la valla", "💥"], ["un ataque con jarabe de maple", "🍯"]],
+  luchador_mexicano: [["un tope suicida desde la tercera cuerda", "💥"], ["una huracarrana", "🌀"], ["una plancha voladora", "🦶"]],
+  brasileno: [["una llave de jiu-jitsu", "🌀"], ["una chilena a la cara", "🦶"], ["un paso de capoeira", "🦶"]],
+  argentino: [["un mate hirviendo", "🧉"], ["un sermón sobre Messi", "📢"], ["un reclamo al árbitro con las manos juntas", "👊"]],
+  britanico: [["un 'sorry' pasivo-agresivo", "📢"], ["una taza de té hirviendo", "💥"], ["un paraguazo", "👊"]],
+  frances: [["una estocada de esgrima", "🗡️"], ["un baguetazo", "💥"], ["un encogimiento de hombros despectivo", "📢"]],
+  aleman: [["un golpe puntual y eficiente", "👊"], ["un jarrazo de cerveza", "💥"], ["una patada con precisión de ingeniería", "🦶"]],
+  italiano: [["un gesto de mano hipnótico", "👊"], ["un sartenazo con pasta", "💥"], ["una caída teatral para engañar al árbitro", "🌀"]],
+  espanol: [["un pase de torero", "🌀"], ["un '¡venga, hombre!' y empujón", "👊"], ["un bostezo pre-siesta", "📢"]],
+  ruso: [["una mirada que congela", "📢"], ["un abrazo de oso siberiano", "🌀"], ["un puñetazo a -40 °C", "👊"]],
+  keniano: [["un sprint alrededor del rival", "🦶"], ["una vuelta de maratón para cansarlo", "🌀"], ["una patada en plena carrera", "🦶"]],
+  sudafricano: [["un 'no te muevas' muy calmado", "📢"], ["una maniobra de safari", "🌀"], ["un golpe con la cantimplora", "💥"]],
+  indio: [["una postura de yoga imposible", "🌀"], ["un batazo de cricket", "💥"], ["una patada flexible", "🦶"]],
+  australiano: [["un boomerang", "💥"], ["un ataque sin miedo alguno", "👊"], ["un '¡crikey!' ensordecedor", "📢"]],
+  neozelandes: [["la haka completa", "📢"], ["un placaje de rugby", "💥"], ["un empujón de melé", "👊"]],
   kpoper: [["un golpe de lightstick", "💜"], ["un ataque del fandom en redes", "📱"], ["un fancam que hipnotiza", "📸"]],
 };
 
@@ -67,6 +83,7 @@ const GOLPES_CATEGORIA = {
   aire: [["un ataque en picada", "💨"], ["un garrazo", "🦅"], ["un picotazo", "💥"]],
   bichos: [["una picadura", "🧪"], ["un mordisco", "🦷"], ["un ataque sorpresa", "💥"]],
   humano: [["un puñetazo", "👊"], ["una patada", "🦶"], ["un empujón", "💥"]],
+  paises: [["un puñetazo", "👊"], ["una patada", "🦶"], ["un empujón", "💥"]],
 };
 
 /* Momentos absurdos que pasan en medio de la pelea (no cambian el resultado). */

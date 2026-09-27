@@ -58,7 +58,7 @@ function chips(container, items, activo, onClick) {
     container.appendChild(b);
   }
 }
-const itemsCategorias = () => [["todos", "Todos"], ...Object.entries(CATEGORIAS).map(([k, c]) => [k, `${c.emoji} ${c.nombre}`])];
+const itemsCategorias = () => [["todos", "Todos"], ...Object.entries(CATEGORIAS).map(([k, c]) => [k, c.nombre])];
 
 function barras(f) {
   return ATRIBUTOS.map(
@@ -71,18 +71,20 @@ function barras(f) {
 function datosReales(f) {
   return `
     <ul class="facts">
-      <li><span>⚖️ Peso</span><b>${fmtPeso(f.peso)}</b></li>
-      <li><span>📏 Tamaño</span><b>${fmt(f.largo)} m</b></li>
-      <li><span>💨 Velocidad</span><b>${fmt(f.velocidad)} km/h</b></li>
-      <li><span>🦷 Mordida</span><b>${f.mordida ? fmt(f.mordida) + " PSI" : "—"}</b></li>
+      <li><span>Peso</span><b>${fmtPeso(f.peso)}</b></li>
+      <li><span>Tamaño</span><b>${fmt(f.largo)} m</b></li>
+      <li><span>Velocidad</span><b>${fmt(f.velocidad)} km/h</b></li>
+      <li><span>Mordida</span><b>${f.mordida ? fmt(f.mordida) + " PSI" : "—"}</b></li>
     </ul>`;
 }
 
 /* ───── arena ───── */
 function renderArenas() {
-  chips($("#arenas"), Object.entries(ARENAS).map(([k, a]) => [k, `${a.emoji} ${a.nombre}`]), state.arena, (k) => {
+  chips($("#arenas"), Object.entries(ARENAS).map(([k, a]) => [k, a.nombre]), state.arena, (k) => {
     state.arena = k;
     renderArenas();
+    renderArmaInfo("a");
+    renderArmaInfo("b");
     ocultarResultado();
   });
   $("#arena-desc").textContent = ARENAS[state.arena].desc;
@@ -94,10 +96,10 @@ function renderSlot(side) {
   const f = state[side];
   const el = $("#slot-" + side);
   el.innerHTML = `
-    <span class="big-emoji">${f.emoji}</span>
+    <span class="big-emoji cat-${f.categoria}">${f.emoji}</span>
     <strong>${f.nombre}</strong>
-    <small>${tamanoCorto(f)} · ${CATEGORIAS[f.categoria].emoji} ${CATEGORIAS[f.categoria].nombre}</small>
-    <em>Cambiar</em>`;
+    <small>${tamanoCorto(f)} · ${CATEGORIAS[f.categoria].nombre}</small>
+    <em>Cambiar luchador</em>`;
 }
 
 function renderSlots() {
@@ -112,11 +114,12 @@ function initArmas() {
   for (const side of ["a", "b"]) {
     const sel = $("#arma-" + side);
     sel.innerHTML =
-      `<option value="">✋ Sin arma</option>` +
+      `<option value="">Sin arma</option>` +
       Object.entries(ARMAS).map(([k, w]) => `<option value="${k}">${w.emoji} ${w.nombre}</option>`).join("");
     sel.onchange = () => {
       state.arma[side] = sel.value || null;
-      renderArmaInfo(side);
+      renderArmaInfo("a");
+      renderArmaInfo("b");
       ocultarResultado();
     };
   }
@@ -127,18 +130,21 @@ function renderArmaInfo(side) {
   $("#arma-" + side).value = id || "";
   const el = $("#arma-info-" + side);
   if (!id) {
-    el.textContent = "";
+    el.innerHTML = "";
     return;
   }
+  const otro = side === "a" ? "b" : "a";
   const pct = Math.round(probUsoArma(state[side], id) * 100);
-  el.textContent =
-    pct >= 90 ? `✅ ${pct}%: sabe usarla` : pct >= 30 ? `🤔 ${pct}% de que sepa usarla` : `🤡 ${pct}% de que sepa usarla`;
+  const [sin, con] = impactoArma(state[side], state[otro], state.arena, id, state.arma[otro], side === "a");
+  el.innerHTML = `
+    <span class="uso ${pct >= 90 ? "alto" : pct >= 30 ? "medio" : "bajo"}">Sabe usarla: ${pct}%</span>
+    <span class="impacto">Gana ${Math.round(sin * 100)}% <b>→ ${Math.round(con * 100)}%</b> si la usa</span>`;
 }
 
 /* ───── picker ───── */
 function abrirPicker(side) {
   state.pickingSide = side;
-  $("#picker-title").textContent = side === "a" ? "Luchador de la esquina roja 🔴" : "Luchador de la esquina azul 🔵";
+  $("#picker-title").textContent = side === "a" ? "Esquina roja" : "Esquina azul";
   $("#picker-search").value = "";
   renderPicker();
   $("#picker").showModal();
@@ -192,7 +198,12 @@ function razonesArmas() {
     const w = ARMAS[id];
     const pct = Math.round(probUsoArma(f, id) * 100);
     const extra = HABILIDAD_ARMAS[f.id] ? " " + HABILIDAD_ARMAS[f.id][1] : "";
-    out.push({ favorece: f.id, texto: `${w.emoji} ${f.nombre} tiene ${w.articulo}: ${pct}% de probabilidad de saber usarl${w.lo === "la" ? "a" : "o"}.${extra}` });
+    const otro = side === "a" ? "b" : "a";
+    const [sin, con] = impactoArma(f, state[otro], state.arena, id, state.arma[otro], side === "a");
+    out.push({
+      favorece: f.id,
+      texto: `${w.emoji} ${f.nombre} tiene ${w.articulo}: ${pct}% de probabilidad de saber usarl${w.lo === "la" ? "a" : "o"}. Si lo logra, sus chances pasan de ${Math.round(sin * 100)}% a ${Math.round(con * 100)}%.${extra}`,
+    });
   }
   return out;
 }
@@ -215,8 +226,8 @@ function pelear() {
     <div id="fight" class="fight"></div>
     <div id="analysis" class="analysis" hidden>
     <div class="verdict">
-      <p class="tag">📊 Según los datos: ${veredicto(p)}</p>
-      <div class="winner"><span class="big-emoji">${ganador.emoji}</span>
+      <p class="tag">Según los datos · ${veredicto(p)}</p>
+      <div class="winner"><span class="big-emoji cat-${ganador.categoria}">${ganador.emoji}</span>
         <div><small>El favorito</small><h3>${ganador.nombre}</h3>
         <p>Ganaría <b>${Math.round(pg * 100)} de cada 100</b> peleas en ${ARENAS[arena].nombre.toLowerCase()}.</p></div>
       </div>
@@ -227,17 +238,17 @@ function pelear() {
       </div>
     </div>
     <div class="reasons">
-      <h4>🧠 Claves del combate</h4>
+      <h4>Claves del combate</h4>
       <ul>${lista}</ul>
     </div>
     <div class="vote">
-      <h4>🍺 ¿Y tú qué opinas?</h4>
+      <h4>¿Y tú qué opinas?</h4>
       <div class="vote-btns">
         <button class="btn vote-a" data-v="${a.id}">${a.emoji} ${a.nombre}</button>
         <button class="btn vote-b" data-v="${b.id}">${b.emoji} ${b.nombre}</button>
       </div>
       <p id="vote-res" class="muted"></p>
-      <button id="btn-share" class="btn ghost small">📋 Copiar para el grupo</button>
+      <button id="btn-share" class="btn ghost small">Copiar para el grupo</button>
     </div>
     </div>`;
   res.hidden = false;
@@ -252,12 +263,20 @@ function pelear() {
 
 async function correrAnimacion() {
   const { a, b, arena } = state;
-  const r = await animarPelea($("#fight"), a, b, arena, { ...state.arma });
+  let r;
+  try {
+    r = await animarPelea($("#fight"), a, b, arena, { ...state.arma });
+  } catch (e) {
+    // Si la animación falla, igual mostramos el análisis.
+    console.error(e);
+    pelea.actual = null;
+    r = { ganador: null, sorpresa: false, btns: $("#fight .stage-btns") || $("#fight") };
+  }
   if (!r) return;
-  ultimaPelea = r;
+  ultimaPelea = r.ganador ? r : null;
   const rev = document.createElement("button");
   rev.className = "btn primary small";
-  rev.textContent = "🔁 Revancha";
+  rev.textContent = "Revancha";
   rev.onclick = () => correrAnimacion();
   r.btns.appendChild(rev);
   const analisis = $("#analysis");
@@ -297,7 +316,7 @@ function compartir(ganador, pg) {
     : "";
   const texto = `🥊 ¿Quién ganaría? ${a.emoji} ${a.nombre} vs ${b.emoji} ${b.nombre} en ${ARENAS[arena].nombre}\n` +
     `${resultado}Según los datos: gana ${ganador.nombre} (${Math.round(pg * 100)}%). ¿Tú qué dices?\n${location.href}`;
-  const ok = () => ($("#btn-share").textContent = "✅ ¡Copiado!");
+  const ok = () => ($("#btn-share").textContent = "¡Copiado!");
   if (navigator.clipboard) navigator.clipboard.writeText(texto).then(ok, () => prompt("Copia esto:", texto));
   else prompt("Copia esto:", texto);
 }
@@ -316,7 +335,7 @@ function renderComparacion() {
     <td><div class="bar"><i style="width:${b[k]}%"></i></div></td></tr>`;
   const el = $("#compare");
   el.innerHTML = `
-    <h2>📊 Cara a cara</h2>
+    <h2>Cara a cara</h2>
     <table>
       <thead><tr><th class="ta">${a.emoji} ${a.nombre}</th><th></th><th class="tb">${b.emoji} ${b.nombre}</th></tr></thead>
       <tbody>
@@ -363,18 +382,20 @@ function renderRoster() {
     .map(
       (f) => `
       <article class="card">
-        <header><span class="big-emoji">${f.emoji}</span><div><h3>${f.nombre}</h3>
-          <small>${CATEGORIAS[f.categoria].emoji} ${CATEGORIAS[f.categoria].nombre}${f.enjambre ? " · 👥 " + f.cantidad : ""}</small></div></header>
+        <header><span class="big-emoji cat-${f.categoria}">${f.emoji}</span><div><h3>${f.nombre}</h3>
+          <small>${CATEGORIAS[f.categoria].nombre}${f.enjambre ? " · " + f.cantidad : ""}</small></div></header>
         ${datosReales(f)}
         <div class="bars">${barras(f)}</div>
-        <p><b>🗡️</b> ${f.armas}</p>
-        <p><b>💪</b> ${f.fortaleza}</p>
-        <p><b>⚠️</b> ${f.debilidad}</p>
-        <p class="dato">💡 ${f.dato}</p>
-        <p class="small">🗡️ Habilidad con armas: <b>${Math.round(habilidadArmas(f) * 100)}%</b></p>
+        <dl class="ficha">
+          <dt>Armas</dt><dd>${f.armas}</dd>
+          <dt>Fuerte</dt><dd>${f.fortaleza}</dd>
+          <dt>Débil</dt><dd>${f.debilidad}</dd>
+          <dt>Con armas</dt><dd>Sabe usarlas el <b>${Math.round(habilidadArmas(f) * 100)}%</b> de las veces</dd>
+        </dl>
+        <p class="dato">${f.dato}</p>
         <div class="card-actions">
-          <button class="btn small vote-a" data-set="a" data-id="${f.id}">🔴 Esquina roja</button>
-          <button class="btn small vote-b" data-set="b" data-id="${f.id}">🔵 Esquina azul</button>
+          <button class="btn small vote-a" data-set="a" data-id="${f.id}">Esquina roja</button>
+          <button class="btn small vote-b" data-set="b" data-id="${f.id}">Esquina azul</button>
         </div>
       </article>`
     )

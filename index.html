@@ -7,24 +7,25 @@
   <meta name="description" content="El debate de siempre entre amigos: ¿quién ganaría en una pelea? Animales y humanos con estadísticas reales." />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;600;800&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Bangers&family=Archivo:wght@400;600;800;900&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="css/styles.css" />
 </head>
 <body>
   <header class="hero">
-    <h1>¿Quién <span>Ganaría</span>?</h1>
-    <p>El debate de siempre, ahora con datos. Elige dos luchadores, el terreno, y que empiece la discusión.</p>
+    <p class="eyebrow">Esta noche · Pelea estelar · Sin reglamento</p>
+    <h1>¿Quién <span>ganaría</span>?</h1>
+    <p class="lede">El debate de siempre entre amigos, ahora con datos reales. Elige dos luchadores, el terreno y un arma si quieres. Después, que empiece la discusión.</p>
   </header>
 
   <main>
     <section class="arena-picker" aria-label="Elegir arena">
-      <h2>1 · Elige el terreno</h2>
+      <h2><span class="paso">1</span> El terreno</h2>
       <div id="arenas" class="chips"></div>
       <p id="arena-desc" class="muted"></p>
     </section>
 
     <section class="ring" aria-label="Luchadores">
-      <h2>2 · Elige a los luchadores</h2>
+      <h2><span class="paso">2</span> Los luchadores</h2>
       <div class="ring-grid">
         <div class="corner">
           <button class="slot" id="slot-a" data-side="a"></button>
@@ -39,8 +40,8 @@
         </div>
       </div>
       <div class="actions">
-        <button id="btn-random" class="btn ghost">🎲 Pelea aleatoria</button>
-        <button id="btn-fight" class="btn primary">⚔️ ¡PELEAR!</button>
+        <button id="btn-random" class="btn ghost">Pelea aleatoria</button>
+        <button id="btn-fight" class="btn primary">¡A pelear!</button>
       </div>
     </section>
 
@@ -49,7 +50,7 @@
     <section class="compare" id="compare" hidden aria-label="Comparación de estadísticas"></section>
 
     <section class="roster-section" aria-label="Enciclopedia de luchadores">
-      <h2>📖 Todos los luchadores</h2>
+      <h2>Enciclopedia de luchadores</h2>
       <div id="roster-filters" class="chips"></div>
       <div id="roster" class="roster"></div>
     </section>
@@ -68,7 +69,7 @@
   <footer>
     <p>Pesos, velocidades y fuerza de mordida son datos reales aproximados. Los atributos 0-100 son estimaciones para el juego.
     Los humanos de distintos países son, en el fondo, el mismo humano: solo cambian la altura y el peso promedio… y los chistes.
-    Esto es entretenimiento: ningún animal (ni fan del K-pop) fue lastimado en la creación de esta web. 🍻</p>
+    Esto es entretenimiento: ningún animal (ni fan del K-pop) fue lastimado en la creación de esta web.</p>
   </footer>
 
   <script src="js/data.js"></script>

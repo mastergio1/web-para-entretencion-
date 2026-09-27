@@ -32,7 +32,7 @@ P(A gana) = poderA³ / (poderA³ + poderB³)
 - **Atributos 0-100 (estimados):** ataque, defensa, fuerza relativa, agilidad, ferocidad, resistencia, inteligencia.
 - **Terreno:** un tiburón en la sabana no tiene nada que hacer; un gorila en el océano tampoco.
 - **Enjambres:** usan un `pesoEfectivo` (20.000 abejas no se noquean de un manotazo).
-- **Armas:** cada luchador tiene una probabilidad de saber usarla (humanos ~95%, chimpancé 60%, tiburón 3%). La probabilidad mostrada promedia los casos en que la usa y en que no; en la animación se sortea si la usa.
+- **Armas:** si el luchador logra usarla, multiplica su poder (palo ×1,3 … machete y hacha ×2). Cada luchador tiene una probabilidad de saber usarla (humanos ~95%, chimpancé 60%, tiburón 3%). La probabilidad mostrada promedia los casos en que la usa y en que no; en la animación se sortea si la usa.
 - **Especiales:** ventajas concretas contra ciertos rivales (las abejas asustan a los elefantes, el tejón melero asalta colmenas…).
 
 Es entretenimiento: los números sirven para discutir, no para cerrar la discusión. 🍻

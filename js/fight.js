@@ -58,69 +58,92 @@ function spriteHTML(f) {
   return `<div class="sprite swarm">${bichos}</div>`;
 }
 
-function decorHTML(arena) {
-  const d = {
-    sabana: ["🌳", "🌾", "🌾", "☀️"],
-    selva: ["🌴", "🌿", "🌴", "🦜"],
-    rio: ["🌿", "🪷", "🌿", "🦟"],
-    oceano: ["🐚", "🪸", "🐠", "☀️"],
-    nieve: ["🏔️", "🌲", "❄️", "❄️"],
-  }[arena];
-  return d.map((e, i) => `<span class="deco d${i}">${e}</span>`).join("");
-}
-
 function armaHTML(armaId) {
   return armaId ? `<span class="arma-sprite">${ARMAS[armaId].emoji}</span>` : "";
 }
 
+/* Onomatopeyas de cómic según el tipo de golpe. */
+const ONOMATOPEYAS = {
+  "🦷": ["¡ÑAM!", "¡CHOMP!", "¡CRUNCH!"],
+  "🐾": ["¡ZAS!", "¡SWISH!", "¡RAS!"],
+  "🧪": ["¡PIC!", "¡ZZZT!", "¡AUCH!"],
+  "🌀": ["¡CRAC!", "¡SQUISH!"],
+  "🦶": ["¡PAF!", "¡PLAF!"],
+  "👊": ["¡PUM!", "¡POW!"],
+  "🥊": ["¡PUM!", "¡POW!"],
+  "🗡️": ["¡ZAS!", "¡CHAS!"],
+  "🌊": ["¡SPLASH!", "¡GLUB!"],
+  "📢": ["¡GRRR!", "¡ROAR!"],
+};
+const ONOMATOPEYAS_ARMA = ["¡BONK!", "¡CLANK!", "¡TOING!", "¡PLONK!"];
+const ONOMATOPEYAS_GENERICAS = ["¡PUM!", "¡PAF!", "¡BAM!", "¡KAPOW!", "¡CRACK!"];
+
 function montarEscenario(cont, a, b, arena, armas) {
+  const agua = arena === "oceano" || arena === "rio";
   cont.innerHTML = `
     <div class="stage arena-${arena}">
-      <div class="decor">${decorHTML(arena)}</div>
-      <div class="hud">
-        <div class="hp hp-a"><span>${a.nombre}</span><div class="hp-bar"><i></i></div></div>
-        <div class="hud-vs">VS</div>
-        <div class="hp hp-b"><span>${b.nombre}</span><div class="hp-bar"><i></i></div></div>
-      </div>
-      <div class="floor">
+      <div class="paisaje" aria-hidden="true"><i class="sol"></i><i class="lejos"></i><i class="arbol"></i></div>
+      <div class="foco"></div>
+      <div class="speed"></div>
+      <div class="camara">
         <div class="fighter f-a ${a.medio === "aire" ? "flying" : ""}"><div class="bob">${spriteHTML(a)}${armaHTML(armas.a)}</div></div>
         <div class="fighter f-b ${b.medio === "aire" ? "flying" : ""}"><div class="bob">${spriteHTML(b)}${armaHTML(armas.b)}</div></div>
       </div>
-      ${arena === "oceano" || arena === "rio" ? '<div class="water"></div>' : ""}
+      ${agua ? '<div class="water"></div>' : ""}
       ${arena === "nieve" ? '<div class="snow"></div>' : ""}
-      <div class="banner"></div>
+      <div class="halftone"></div>
+      <div class="flash"></div>
+      <div class="hud">
+        <div class="hp hp-a"><span>${a.nombre}</span><div class="hp-bar"><u></u><i></i></div></div>
+        <div class="hud-vs">VS</div>
+        <div class="hp hp-b"><span>${b.nombre}</span><div class="hp-bar"><u></u><i></i></div></div>
+      </div>
+      <div class="banner"><span></span></div>
     </div>
-    <div class="commentary"><span>🎙️</span><p></p></div>
+    <div class="commentary"><span class="envivo">En vivo</span><p></p></div>
     <div class="stage-btns">
-      <button class="btn ghost small btn-skip">⏩ Saltar al final</button>
+      <button class="btn ghost small btn-skip">Saltar al final</button>
     </div>`;
+  const q = (sel) => cont.querySelector(sel);
   return {
-    stage: cont.querySelector(".stage"),
-    floor: cont.querySelector(".floor"),
-    f: { a: cont.querySelector(".f-a"), b: cont.querySelector(".f-b") },
-    hp: { a: cont.querySelector(".hp-a i"), b: cont.querySelector(".hp-b i") },
-    arma: { a: cont.querySelector(".f-a .arma-sprite"), b: cont.querySelector(".f-b .arma-sprite") },
-    banner: cont.querySelector(".banner"),
-    texto: cont.querySelector(".commentary p"),
-    skipBtn: cont.querySelector(".btn-skip"),
-    btns: cont.querySelector(".stage-btns"),
+    stage: q(".stage"),
+    camara: q(".camara"),
+    speed: q(".speed"),
+    flash: q(".flash"),
+    foco: q(".foco"),
+    f: { a: q(".f-a"), b: q(".f-b") },
+    bob: { a: q(".f-a .bob"), b: q(".f-b .bob") },
+    hp: { a: q(".hp-a i"), b: q(".hp-b i") },
+    trail: { a: q(".hp-a u"), b: q(".hp-b u") },
+    arma: { a: q(".f-a .arma-sprite"), b: q(".f-b .arma-sprite") },
+    banner: q(".banner"),
+    bannerTxt: q(".banner span"),
+    texto: q(".commentary p"),
+    skipBtn: q(".btn-skip"),
+    btns: q(".stage-btns"),
   };
 }
 
-function efecto(el, clase, contenido, x, y) {
-  const s = document.createElement("span");
+function efecto(el, clase, html, x, y, estilos = {}) {
+  const s = document.createElement("div");
   s.className = clase;
-  s.textContent = contenido;
+  s.innerHTML = html;
   s.style.left = x + "px";
   s.style.top = y + "px";
+  for (const [k, v] of Object.entries(estilos)) s.style.setProperty(k, v);
   el.appendChild(s);
-  setTimeout(() => s.remove(), 1200);
+  setTimeout(() => s.remove(), 1500);
 }
 
 function reiniciarClase(el, clase) {
   el.classList.remove(clase);
   void el.offsetWidth;
   el.classList.add(clase);
+}
+
+/* Quita el emoji inicial de las frases: el narrador habla, no manda stickers. */
+function sinEmojiInicial(t) {
+  return t.replace(/^[\p{Extended_Pictographic}️‍]+\s*/u, "");
 }
 
 /*
@@ -158,25 +181,34 @@ async function animarPelea(cont, a, b, arena, armas) {
     b: !!armas.b && Math.random() < probUsoArma(b, armas.b),
   };
   const pReal = probabilidad(usa.a ? conArma(a, armas.a) : a, usa.b ? conArma(b, armas.b) : b, arena);
-  const pEsperada = probabilidadConArmas(a, b, arena, armas.a, armas.b);
   const g = guion(pReal);
-  g.pW = g.ganador === "a" ? pEsperada : 1 - pEsperada;
-  g.sorpresa = g.pW < 0.5;
+  g.sorpresa = g.pW < 0.4;
   const L = { a, b };
   const ui = montarEscenario(cont, a, b, arena, armas);
   const vida = { a: 100, b: 100 };
-  const decir = (t) => (ui.texto.innerHTML = t);
+  const decir = (t) => {
+    ui.texto.innerHTML = sinEmojiInicial(t);
+    reiniciarClase(ui.texto, "pop");
+  };
+  const cartel = (t, fijo) => {
+    ui.bannerTxt.textContent = t;
+    ui.banner.classList.remove("stay");
+    reiniciarClase(ui.banner, fijo ? "stay" : "show");
+  };
+  const ponerVida = (side) => {
+    ui.hp[side].style.width = vida[side] + "%";
+    ui.trail[side].style.width = vida[side] + "%";
+    ui.hp[side].classList.toggle("low", vida[side] < 30);
+  };
   ui.skipBtn.onclick = ctrl.saltar;
   if (window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches) ctrl.saltar();
 
   // Presentación
   decir(`Esquina roja: <b>${a.nombre}</b> (${a.enjambre ? a.cantidad : fmtPeso(a.peso)}). Esquina azul: <b>${b.nombre}</b> (${b.enjambre ? b.cantidad : fmtPeso(b.peso)}).`);
-  ui.banner.textContent = "¿LISTOS?";
-  reiniciarClase(ui.banner, "show");
-  await esperar(1500);
-  ui.banner.textContent = "¡PELEEN!";
-  reiniciarClase(ui.banner, "show");
-  await esperar(900);
+  cartel("¿Listos?");
+  await esperar(1400);
+  cartel("¡Peleen!");
+  await esperar(1000);
 
   const fueraDeLugar = [a, b].filter((x) => adaptacion(x, arena) < 0.1);
   if (fueraDeLugar.length) {
@@ -208,7 +240,7 @@ async function animarPelea(cont, a, b, arena, armas) {
     const ultimo = i === g.turnos.length - 1;
 
     decir(
-      (ultimo ? "🔥 " : critico ? "💢 ¡GOLPE CRÍTICO! " : "") +
+      (ultimo ? "<b>¡GOLPE FINAL!</b> " : critico ? "<b>¡CRÍTICO!</b> " : "") +
         elegir([
           `¡<b>${L[atk].nombre}</b> lanza ${golpe[0]}!`,
           `¡Uff! <b>${L[atk].nombre}</b> conecta ${golpe[0]}.`,
@@ -217,34 +249,57 @@ async function animarPelea(cont, a, b, arena, armas) {
         ])
     );
 
-    const ancho = ui.floor.clientWidth;
-    const dx = (atk === "a" ? 1 : -1) * ancho * 0.28;
+    const dir = atk === "a" ? 1 : -1;
+    const dx = dir * ui.stage.clientWidth * 0.3;
+    // Anticipación (se echa para atrás) → embestida con estiramiento → regreso
     ui.f[atk].animate(
       [
-        { transform: "translateX(0)" },
-        { transform: `translateX(${-dx * 0.08}px)`, offset: 0.2 },
-        { transform: `translateX(${dx}px) scale(1.12)`, offset: 0.5 },
-        { transform: "translateX(0)" },
+        { transform: "translateX(0) scale(1)" },
+        { transform: `translateX(${-dx * 0.12}px) scale(0.88, 1.1)`, offset: 0.28 },
+        { transform: `translateX(${dx}px) skewX(${-dir * 14}deg) scale(1.15, 0.9)`, offset: 0.55 },
+        { transform: `translateX(${dx * 0.9}px) scale(1)`, offset: 0.72 },
+        { transform: "translateX(0) scale(1)" },
       ],
-      { duration: 700, easing: "ease-in-out" }
+      { duration: 820, easing: "cubic-bezier(.5,0,.3,1)" }
     );
-    await esperar(350);
+    await esperar(260);
+    reiniciarClase(ui.speed, "on");
+    await esperar(190);
     if (ctrl.skip) break;
 
     // Impacto
     vida[def] = Math.max(0, vida[def] - t.dano);
-    ui.hp[def].style.width = vida[def] + "%";
-    ui.hp[def].classList.toggle("low", vida[def] < 30);
+    ponerVida(def);
+    reiniciarClase(ui.flash, "on");
+    ui.f[def].animate(
+      [
+        { transform: "translateX(0) rotate(0)" },
+        { transform: `translateX(${dir * (critico ? 60 : 32)}px) rotate(${dir * (critico ? 16 : 9)}deg)`, offset: 0.25 },
+        { transform: "translateX(0) rotate(0)" },
+      ],
+      { duration: 520, easing: "cubic-bezier(.2,.8,.3,1)" }
+    );
     const r = ui.f[def].getBoundingClientRect();
     const rs = ui.stage.getBoundingClientRect();
     const cx = r.left - rs.left + r.width / 2;
-    const cy = r.top - rs.top + r.height * 0.35;
-    efecto(ui.stage, "fx" + (critico ? " big" : ""), golpe[1], cx + rand(-20, 20), cy + rand(-15, 15));
-    efecto(ui.stage, "dmg", "-" + t.dano, cx + rand(-10, 10), cy - 30);
+    const cy = r.top - rs.top + r.height * 0.3;
+    const palabra = conElArma
+      ? elegir(ONOMATOPEYAS_ARMA)
+      : elegir(ONOMATOPEYAS[golpe[1]] || ONOMATOPEYAS_GENERICAS);
+    efecto(ui.stage, "pow" + (critico || ultimo ? " big" : ""), `<b>${palabra}</b>`, cx - dir * 20 + rand(-15, 15), cy + rand(-10, 10), {
+      "--rot": rand(-14, 8).toFixed(0) + "deg",
+    });
+    efecto(ui.stage, "dmg", "-" + t.dano, cx + dir * 70, cy - 45);
     reiniciarClase(ui.f[def], "hit");
-    if (critico || ultimo) reiniciarClase(ui.stage, "shake");
+    if (critico || ultimo) {
+      reiniciarClase(ui.stage, "shake");
+      ui.camara.animate(
+        [{ transform: "scale(1)" }, { transform: `scale(1.14) translateX(${-dir * 4}%)`, offset: 0.3 }, { transform: "scale(1)" }],
+        { duration: 700, easing: "ease-out" }
+      );
+    }
 
-    await esperar(ultimo ? 700 : 1050);
+    await esperar(ultimo ? 700 : 1100);
 
     if (!ultimo && Math.random() < 0.22) {
       decir(elegir([...EVENTOS.general, ...(EVENTOS[arena] || [])]));
@@ -267,22 +322,27 @@ async function animarPelea(cont, a, b, arena, armas) {
   const P = g.perdedor;
   vida[P] = 0;
   vida[W] = Math.max(vida[W], 1);
-  ui.hp.a.style.width = vida.a + "%";
-  ui.hp.b.style.width = vida.b + "%";
-  ui.hp[P].classList.add("low");
+  ponerVida("a");
+  ponerVida("b");
   ui.f[P].classList.add("ko");
+  ui.bob[P].insertAdjacentHTML("beforeend", '<div class="estrellas"><b>★</b><b>★</b><b>★</b></div>');
   ui.f[W].classList.add("win");
-  ui.banner.textContent = "K.O.!";
-  reiniciarClase(ui.banner, "show");
-  ui.banner.classList.add("stay");
-  for (let i = 0; i < 18; i++) {
-    efecto(ui.stage, "confeti", elegir(["🎉", "✨", "🎊", "⭐"]), rand(0, ui.stage.clientWidth), rand(-10, 40));
+  ui.foco.style.background = `radial-gradient(circle at ${W === "a" ? "22%" : "78%"} 60%, rgba(255,255,255,.35), transparent 32%), rgba(0,0,0,.25)`;
+  ui.foco.classList.add("on");
+  cartel(g.sorpresa ? "¡Sorpresa!" : "¡K.O.!", true);
+  const colores = ["#ffc23d", "#ff4b3a", "#3b8cff", "#45d483", "#fff"];
+  for (let i = 0; i < 28; i++) {
+    efecto(ui.stage, "confeti", "", rand(0, ui.stage.clientWidth), rand(-20, 30), {
+      "--c": elegir(colores),
+      "--dx": rand(-60, 60).toFixed(0) + "px",
+      "animation-delay": rand(0, 0.4).toFixed(2) + "s",
+    });
   }
   decir(
     (g.sorpresa
-      ? `😱 ¡SORPRESA TOTAL! <b>${L[W].nombre}</b> gana contra todo pronóstico (solo tenía ${Math.round(g.pW * 100)}% de probabilidad).`
-      : `🏆 ¡<b>${L[W].nombre}</b> gana por K.O.! ${vida[W] > 70 ? "Casi sin despeinarse." : vida[W] < 25 ? "Pero quedó hecho pedazos." : ""}`) +
-      (usa[W] && armas[W] ? ` Gracias en parte a ${ARMAS[armas[W]].articulo} ${ARMAS[armas[W]].emoji}.` : "") +
+      ? `¡SORPRESA TOTAL! <b>${L[W].nombre}</b> gana contra todo pronóstico (en esta pelea solo tenía ${Math.round(g.pW * 100)}% de probabilidad).`
+      : `¡<b>${L[W].nombre}</b> gana por K.O.! ${vida[W] > 70 ? "Casi sin despeinarse." : vida[W] < 25 ? "Pero quedó hecho pedazos." : ""}`) +
+      (usa[W] && armas[W] ? ` Gracias en parte ${ARMAS[armas[W]].articulo.startsWith("el ") ? "al " + ARMAS[armas[W]].articulo.slice(3) : "a " + ARMAS[armas[W]].articulo}.` : "") +
       (armas[P] && !usa[P] ? ` Quizás le habría ido mejor si hubiera sabido usar ${ARMAS[armas[P]].articulo}.` : "")
   );
   ui.skipBtn.remove();
