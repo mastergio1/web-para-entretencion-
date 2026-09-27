@@ -45,6 +45,9 @@ function claveDuelo() {
 function fmt(n) {
   return n.toLocaleString("es-ES", { maximumFractionDigits: 1 });
 }
+function elegirDe(arr) {
+  return arr[Math.floor(Math.random() * arr.length)];
+}
 function tamanoCorto(f) {
   return f.enjambre ? f.cantidad : fmtPeso(f.peso);
 }
@@ -115,7 +118,8 @@ function initArmas() {
     const sel = $("#arma-" + side);
     sel.innerHTML =
       `<option value="">Sin arma</option>` +
-      Object.entries(ARMAS).map(([k, w]) => `<option value="${k}">${w.emoji} ${w.nombre}</option>`).join("");
+      `<optgroup label="Rudimentarias">${opcionesArmas(false)}</optgroup>` +
+      `<optgroup label="Legendarias (casi nunca funcionan)">${opcionesArmas(true)}</optgroup>`;
     sel.onchange = () => {
       state.arma[side] = sel.value || null;
       renderArmaInfo("a");
@@ -123,6 +127,13 @@ function initArmas() {
       ocultarResultado();
     };
   }
+}
+
+function opcionesArmas(legendarias) {
+  return Object.entries(ARMAS)
+    .filter(([, w]) => !!w.legendaria === legendarias)
+    .map(([k, w]) => `<option value="${k}">${w.emoji} ${w.nombre}</option>`)
+    .join("");
 }
 
 function renderArmaInfo(side) {
@@ -137,7 +148,9 @@ function renderArmaInfo(side) {
   const pct = Math.round(probUsoArma(state[side], id) * 100);
   const [sin, con] = impactoArma(state[side], state[otro], state.arena, id, state.arma[otro], side === "a");
   el.innerHTML = `
-    <span class="uso ${pct >= 90 ? "alto" : pct >= 30 ? "medio" : "bajo"}">Sabe usarla: ${pct}%</span>
+    ${ARMAS[id].legendaria
+      ? `<span class="uso legendaria">Legendaria: lo elige el ${pct}% de las veces</span>`
+      : `<span class="uso ${pct >= 90 ? "alto" : pct >= 30 ? "medio" : "bajo"}">Sabe usarla: ${pct}%</span>`}
     <span class="impacto">Gana ${Math.round(sin * 100)}% <b>→ ${Math.round(con * 100)}%</b> si la usa</span>`;
 }
 
@@ -197,7 +210,9 @@ function razonesArmas() {
     const f = state[side];
     const w = ARMAS[id];
     const pct = Math.round(probUsoArma(f, id) * 100);
-    const extra = HABILIDAD_ARMAS[f.id] ? " " + HABILIDAD_ARMAS[f.id][1] : "";
+    const extra = w.legendaria
+      ? " Es un arma legendaria: no importa quién la tenga, ella decide."
+      : HABILIDAD_ARMAS[f.id] ? " " + HABILIDAD_ARMAS[f.id][1] : "";
     const otro = side === "a" ? "b" : "a";
     const [sin, con] = impactoArma(f, state[otro], state.arena, id, state.arma[otro], side === "a");
     out.push({
@@ -364,7 +379,10 @@ function aleatorio() {
   state.arena = (buenas.length ? buenas : arenas)[Math.floor(Math.random() * (buenas.length || arenas.length))];
   const armas = Object.keys(ARMAS);
   for (const side of ["a", "b"]) {
-    state.arma[side] = Math.random() < 0.35 ? armas[Math.floor(Math.random() * armas.length)] : null;
+    const normales = armas.filter((k) => !ARMAS[k].legendaria);
+    const legendarias = armas.filter((k) => ARMAS[k].legendaria);
+    const r = Math.random();
+    state.arma[side] = r < 0.07 ? elegirDe(legendarias) : r < 0.35 ? elegirDe(normales) : null;
   }
   renderArenas();
   renderSlots();

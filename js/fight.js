@@ -59,7 +59,8 @@ function spriteHTML(f) {
 }
 
 function armaHTML(armaId) {
-  return armaId ? `<span class="arma-sprite">${ARMAS[armaId].emoji}</span>` : "";
+  if (!armaId) return "";
+  return `<span class="arma-sprite${ARMAS[armaId].legendaria ? " legendaria" : ""}">${ARMAS[armaId].emoji}</span>`;
 }
 
 /* Onomatopeyas de cómic según el tipo de golpe. */
@@ -180,7 +181,7 @@ async function animarPelea(cont, a, b, arena, armas) {
     a: !!armas.a && Math.random() < probUsoArma(a, armas.a),
     b: !!armas.b && Math.random() < probUsoArma(b, armas.b),
   };
-  const pReal = probabilidad(usa.a ? conArma(a, armas.a) : a, usa.b ? conArma(b, armas.b) : b, arena);
+  const pReal = probConUso(a, b, arena, armas.a, armas.b, usa.a, usa.b);
   const g = guion(pReal);
   g.sorpresa = g.pW < 0.4;
   const L = { a, b };
@@ -218,6 +219,25 @@ async function animarPelea(cont, a, b, arena, armas) {
 
   for (const side of ["a", "b"]) {
     if (!armas[side]) continue;
+    const w = ARMAS[armas[side]];
+    if (w.legendaria) {
+      // Entrada especial: el arma cae del cielo en un rayo dorado
+      ui.stage.insertAdjacentHTML("beforeend", `<div class="rayo rayo-${side}"></div>`);
+      cartel("¡Legendaria!");
+      decir(`Del cielo cae un arma legendaria junto a <b>${L[side].nombre}</b>: <b>${w.nombre}</b>. ¿Lo elegirá como su portador?`);
+      reiniciarClase(ui.arma[side], "arma-duda");
+      await esperar(2400);
+      ui.stage.querySelector(".rayo-" + side)?.remove();
+      ui.arma[side].classList.remove("arma-duda");
+      ui.arma[side].classList.add(usa[side] ? "arma-ok" : "arma-caida");
+      if (usa[side]) {
+        reiniciarClase(ui.flash, "oro");
+        cartel("¡Elegido!");
+      }
+      decir(fraseArma(L[side], armas[side], usa[side]));
+      await esperar(3000);
+      continue;
+    }
     decir(`${ARMAS[armas[side]].emoji} Alguien le lanza ${ARMAS[armas[side]].articulo} a <b>${L[side].nombre}</b>… ¿sabrá usarl${ARMAS[armas[side]].lo === "la" ? "a" : "o"}?`);
     reiniciarClase(ui.arma[side], "arma-duda");
     await esperar(1600);
@@ -231,7 +251,7 @@ async function animarPelea(cont, a, b, arena, armas) {
     const t = g.turnos[i];
     const atk = t.quien;
     const def = atk === "a" ? "b" : "a";
-    const conElArma = usa[atk] && Math.random() < 0.55;
+    const conElArma = usa[atk] && Math.random() < (ARMAS[armas[atk]].legendaria ? 0.85 : 0.55);
     const esHumano = L[atk].categoria === "humano" || L[atk].categoria === "paises";
     const golpe = conElArma
       ? [ARMAS[armas[atk]].golpe + (!esHumano && Math.random() < 0.5 ? " (nadie entiende cómo lo sostiene)" : ""), ARMAS[armas[atk]].emoji]
@@ -284,7 +304,7 @@ async function animarPelea(cont, a, b, arena, armas) {
     const cx = r.left - rs.left + r.width / 2;
     const cy = r.top - rs.top + r.height * 0.3;
     const palabra = conElArma
-      ? elegir(ONOMATOPEYAS_ARMA)
+      ? ARMAS[armas[atk]].onomatopeya || elegir(ONOMATOPEYAS_ARMA)
       : elegir(ONOMATOPEYAS[golpe[1]] || ONOMATOPEYAS_GENERICAS);
     efecto(ui.stage, "pow" + (critico || ultimo ? " big" : ""), `<b>${palabra}</b>`, cx - dir * 20 + rand(-15, 15), cy + rand(-10, 10), {
       "--rot": rand(-14, 8).toFixed(0) + "deg",
@@ -317,6 +337,8 @@ async function animarPelea(cont, a, b, arena, armas) {
     }
   }
 
+  ui.stage.querySelectorAll(".rayo").forEach((r) => r.remove());
+
   // Estado final (también si se saltó)
   const W = g.ganador;
   const P = g.perdedor;
@@ -329,7 +351,8 @@ async function animarPelea(cont, a, b, arena, armas) {
   ui.f[W].classList.add("win");
   ui.foco.style.background = `radial-gradient(circle at ${W === "a" ? "22%" : "78%"} 60%, rgba(255,255,255,.35), transparent 32%), rgba(0,0,0,.25)`;
   ui.foco.classList.add("on");
-  cartel(g.sorpresa ? "¡Sorpresa!" : "¡K.O.!", true);
+  const ganoConLegendaria = usa[W] && armas[W] && ARMAS[armas[W]].legendaria;
+  cartel(ganoConLegendaria ? "¡Legendario!" : g.sorpresa ? "¡Sorpresa!" : "¡K.O.!", true);
   const colores = ["#ffc23d", "#ff4b3a", "#3b8cff", "#45d483", "#fff"];
   for (let i = 0; i < 28; i++) {
     efecto(ui.stage, "confeti", "", rand(0, ui.stage.clientWidth), rand(-20, 30), {
@@ -339,7 +362,9 @@ async function animarPelea(cont, a, b, arena, armas) {
     });
   }
   decir(
-    (g.sorpresa
+    ganoConLegendaria
+      ? `¡VICTORIA LEGENDARIA! <b>${L[W].nombre}</b> gana gracias ${ARMAS[armas[W]].articulo.startsWith("el ") ? "al " + ARMAS[armas[W]].articulo.slice(3) : "a " + ARMAS[armas[W]].articulo}. Esto se va a contar por generaciones.`
+      : (g.sorpresa
       ? `¡SORPRESA TOTAL! <b>${L[W].nombre}</b> gana contra todo pronóstico (en esta pelea solo tenía ${Math.round(g.pW * 100)}% de probabilidad).`
       : `¡<b>${L[W].nombre}</b> gana por K.O.! ${vida[W] > 70 ? "Casi sin despeinarse." : vida[W] < 25 ? "Pero quedó hecho pedazos." : ""}`) +
       (usa[W] && armas[W] ? ` Gracias en parte ${ARMAS[armas[W]].articulo.startsWith("el ") ? "al " + ARMAS[armas[W]].articulo.slice(3) : "a " + ARMAS[armas[W]].articulo}.` : "") +

@@ -23,6 +23,7 @@
 }
 
 * { box-sizing: border-box; }
+[hidden] { display: none !important; }
 html { scroll-behavior: smooth; }
 body {
   margin: 0;
@@ -375,6 +376,28 @@ footer { text-align: center; color: var(--muted); font-size: 0.8rem; padding: 24
 .arma-sprite.arma-caida { bottom: -14%; opacity: 0.7; filter: var(--sticker) grayscale(0.8); }
 .f-a .arma-sprite.arma-caida { transform: rotate(110deg); }
 .f-b .arma-sprite.arma-caida { transform: scaleX(-1) rotate(110deg); }
+
+/* armas legendarias */
+.arma-sprite.legendaria { animation: aura 1.2s ease-in-out infinite; }
+@keyframes aura {
+  0%, 100% { filter: var(--sticker) drop-shadow(0 0 6px #ffd84d); }
+  50% { filter: var(--sticker) drop-shadow(0 0 18px #ffd84d) drop-shadow(0 0 30px #fff3a0); }
+}
+.arma-sprite.legendaria.arma-ok { animation: aura 0.6s ease-in-out infinite; }
+.arma-sprite.legendaria.arma-caida { animation: none; }
+.rayo {
+  position: absolute; top: 0; bottom: 18%; width: 16%; z-index: 1; pointer-events: none;
+  background: linear-gradient(90deg, transparent, rgba(255, 230, 120, 0.85) 35%, #fffbe0 50%, rgba(255, 230, 120, 0.85) 65%, transparent);
+  animation: rayo 2.4s ease-out forwards; transform-origin: top;
+}
+.rayo-a { left: 13%; }
+.rayo-b { right: 13%; }
+@keyframes rayo { 0% { transform: scaleY(0); opacity: 1; } 20% { transform: scaleY(1); } 75% { opacity: 0.9; } 100% { opacity: 0; } }
+.flash.oro { background: #ffe066; animation: flash 0.5s ease-out; }
+.arma-info .uso.legendaria {
+  color: var(--ink); background: linear-gradient(90deg, #ffd84d, #fff3a0, #ffd84d); padding: 2px 8px; border-radius: 4px;
+  align-self: center; font-size: 0.78rem;
+}
 
 /* efectos */
 .speed {

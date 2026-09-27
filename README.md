@@ -33,6 +33,7 @@ P(A gana) = poderA³ / (poderA³ + poderB³)
 - **Terreno:** un tiburón en la sabana no tiene nada que hacer; un gorila en el océano tampoco.
 - **Enjambres:** usan un `pesoEfectivo` (20.000 abejas no se noquean de un manotazo).
 - **Armas:** si el luchador logra usarla, multiplica su poder (palo ×1,3 … machete y hacha ×2). Cada luchador tiene una probabilidad de saber usarla (humanos ~95%, chimpancé 60%, tiburón 3%). La probabilidad mostrada promedia los casos en que la usa y en que no; en la animación se sortea si la usa.
+- **Armas legendarias** (Nokia 3310, chancla de la abuela, pan de hace 3 días, control universal, pato de hule cósmico): el arma elige a su portador con la misma probabilidad baja para cualquiera (3-9%). Si lo elige, gana el 85-97% de las veces, aunque sea una hormiga contra un elefante.
 - **Especiales:** ventajas concretas contra ciertos rivales (las abejas asustan a los elefantes, el tejón melero asalta colmenas…).
 
 Es entretenimiento: los números sirven para discutir, no para cerrar la discusión. 🍻

@@ -20,6 +20,40 @@ const ARMAS = {
   arco: { nombre: "Arco y flechas", articulo: "el arco", lo: "lo", poder: 1.9, emoji: "🏹", ataque: 22, defensa: 0, dificultad: 0.6, golpe: "un flechazo" },
   boomerang: { nombre: "Boomerang", articulo: "el boomerang", lo: "lo", poder: 1.35, emoji: "🪃", ataque: 10, defensa: 0, dificultad: 0.6, golpe: "un boomerang (que sí volvió)" },
   chancla: { nombre: "Chancla", articulo: "la chancla", lo: "la", poder: 1.15, emoji: "🩴", ataque: 5, defensa: 0, dificultad: 1, golpe: "un chanclazo" },
+
+  // ───── LEGENDARIAS ─────
+  // El arma elige a su portador: `uso` es la misma probabilidad para cualquiera (humano, tiburón u hormiga).
+  // Si lo acepta, gana el `victoria` de las veces contra quien sea. Entre dos legendarias decide el `poder`.
+  nokia: {
+    nombre: "Nokia 3310 indestructible", articulo: "el Nokia 3310", lo: "lo", emoji: "📱", legendaria: true, uso: 0.07, victoria: 0.9, poder: 150,
+    ataque: 40, defensa: 40, golpe: "un Nokiazo indestructible", onomatopeya: "¡RING RING!",
+    exito: "Suena el tono clásico de Nokia. El 3310 vibra, brilla… y elige a {n}. Tiene 100% de batería desde 2000.",
+    fallo: "El Nokia 3310 no considera digno a {n}. Se queda en el suelo, intacto, con 3 barras de señal.",
+  },
+  chancla_abuela: {
+    nombre: "Chancla de la abuela", articulo: "la chancla de la abuela", lo: "la", emoji: "🩴", legendaria: true, uso: 0.08, victoria: 0.88, poder: 120,
+    ataque: 40, defensa: 10, golpe: "un chanclazo teledirigido de la abuela", onomatopeya: "¡FLAP!",
+    exito: "Se escucha a lo lejos: '¡¿Qué te dije?!'. La chancla de la abuela elige a {n}. Nunca ha fallado un tiro.",
+    fallo: "La chancla de la abuela mira a {n} con decepción y regresa volando a su dueña.",
+  },
+  pan_duro: {
+    nombre: "Pan de hace 3 días", articulo: "el pan de hace 3 días", lo: "lo", emoji: "🥖", legendaria: true, uso: 0.09, victoria: 0.85, poder: 100,
+    ataque: 40, defensa: 20, golpe: "un panazo con dureza de diamante", onomatopeya: "¡CRONCH!",
+    exito: "{n} levanta el pan de hace 3 días. Los geólogos confirman: ya es más duro que el diamante.",
+    fallo: "{n} intenta levantar el pan de hace 3 días. No se mueve. Ahora es parte del paisaje.",
+  },
+  control: {
+    nombre: "Control universal", articulo: "el control universal", lo: "lo", emoji: "🎮", legendaria: true, uso: 0.04, victoria: 0.95, poder: 200,
+    ataque: 40, defensa: 40, golpe: "un botón de PAUSA seguido de un golpe gratis", onomatopeya: "¡PAUSA!",
+    exito: "{n} presiona un botón al azar del control universal… y PAUSA LA REALIDAD. El rival quedó congelado.",
+    fallo: "{n} aprieta el control universal y solo logra cambiar el idioma del narrador a portugués. Desculpe.",
+  },
+  pato: {
+    nombre: "Pato de hule cósmico", articulo: "el pato de hule cósmico", lo: "lo", emoji: "🦆", legendaria: true, uso: 0.03, victoria: 0.97, poder: 250,
+    ataque: 50, defensa: 50, golpe: "un chillido cósmico de pato de hule", onomatopeya: "¡CUAC!",
+    exito: "El pato de hule cósmico abre los ojos. Los planetas se alinean. {n} ahora tiene el poder del universo.",
+    fallo: "El pato de hule cósmico hace 'cuac' una vez y se va flotando hacia otra dimensión.",
+  },
 };
 
 /* Qué tan probable es que cada luchador sepa usar un arma (0-1), con su justificación real (si la hay). */
@@ -51,7 +85,9 @@ function habilidadArmas(f) {
 
 function probUsoArma(f, armaId) {
   if (!armaId) return 0;
-  return Math.min(1, habilidadArmas(f) * ARMAS[armaId].dificultad);
+  const w = ARMAS[armaId];
+  if (w.legendaria) return w.uso;
+  return Math.min(1, habilidadArmas(f) * w.dificultad);
 }
 
 /* Copia del luchador con el arma en la mano. */
@@ -61,6 +97,18 @@ function conArma(f, armaId) {
   let multArma = w.poder;
   if (armaId === "chancla" && f.id === "latino") multArma = 2.2; // chancla en manos expertas
   return { ...f, ataque: f.ataque + w.ataque, defensa: f.defensa + w.defensa, multArma };
+}
+
+/* Probabilidad de que gane A sabiendo quién logró usar su arma. */
+function probConUso(a, b, arena, armaA, armaB, usaA, usaB) {
+  usaA = usaA && !!armaA;
+  usaB = usaB && !!armaB;
+  const base = probabilidad(usaA ? conArma(a, armaA) : a, usaB ? conArma(b, armaB) : b, arena);
+  const legA = usaA && ARMAS[armaA].legendaria;
+  const legB = usaB && ARMAS[armaB].legendaria;
+  if (legA && !legB) return Math.max(base, ARMAS[armaA].victoria);
+  if (legB && !legA) return Math.min(base, 1 - ARMAS[armaB].victoria);
+  return base;
 }
 
 /*
@@ -74,18 +122,26 @@ function probabilidadConArmas(a, b, arena, armaA, armaB) {
   for (const [usaA, pa] of [[true, ua], [false, 1 - ua]]) {
     for (const [usaB, pb] of [[true, ub], [false, 1 - ub]]) {
       const w = pa * pb;
-      if (w > 0) p += w * probabilidad(usaA ? conArma(a, armaA) : a, usaB ? conArma(b, armaB) : b, arena);
+      if (w > 0) p += w * probConUso(a, b, arena, armaA, armaB, usaA, usaB);
     }
   }
   return p;
 }
 
-/* Chances de A sin arma vs. si la usa (para mostrar cuánto cambia el arma). */
+/* Chances de f de ganar si NO usa su arma vs. si SÍ la usa (promediando lo que haga el rival). */
 function impactoArma(f, rival, arena, armaId, armaRival, esA) {
-  const pSin = probabilidadConArmas(esA ? f : rival, esA ? rival : f, arena, esA ? null : armaRival, esA ? armaRival : null);
-  const fArmado = conArma(f, armaId);
-  const pCon = probabilidadConArmas(esA ? fArmado : rival, esA ? rival : fArmado, arena, esA ? null : armaRival, esA ? armaRival : null);
-  return esA ? [pSin, pCon] : [1 - pSin, 1 - pCon];
+  const ur = probUsoArma(rival, armaRival);
+  const calc = (usaF) => {
+    let p = 0;
+    for (const [usaR, pr] of [[true, ur], [false, 1 - ur]]) {
+      if (pr <= 0) continue;
+      p += pr * (esA
+        ? probConUso(f, rival, arena, armaId, armaRival, usaF, usaR)
+        : 1 - probConUso(rival, f, arena, armaRival, armaId, usaR, usaF));
+    }
+    return p;
+  };
+  return [calc(false), calc(true)];
 }
 
 /* ───── narración ───── */
@@ -137,6 +193,7 @@ const FRASES_ARMA = {
 
 function fraseArma(f, armaId, usa) {
   const w = ARMAS[armaId];
+  if (w.legendaria) return (usa ? w.exito : w.fallo).replaceAll("{n}", `<b>${f.nombre}</b>`);
   const humano = f.categoria === "humano" || f.categoria === "paises";
   let tipo;
   if (humano) tipo = usa ? "exitoHumano" : "falloHumano";
