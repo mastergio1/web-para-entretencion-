@@ -69,7 +69,11 @@ function decorHTML(arena) {
   return d.map((e, i) => `<span class="deco d${i}">${e}</span>`).join("");
 }
 
-function montarEscenario(cont, a, b, arena) {
+function armaHTML(armaId) {
+  return armaId ? `<span class="arma-sprite">${ARMAS[armaId].emoji}</span>` : "";
+}
+
+function montarEscenario(cont, a, b, arena, armas) {
   cont.innerHTML = `
     <div class="stage arena-${arena}">
       <div class="decor">${decorHTML(arena)}</div>
@@ -79,8 +83,8 @@ function montarEscenario(cont, a, b, arena) {
         <div class="hp hp-b"><span>${b.nombre}</span><div class="hp-bar"><i></i></div></div>
       </div>
       <div class="floor">
-        <div class="fighter f-a ${a.medio === "aire" ? "flying" : ""}"><div class="bob">${spriteHTML(a)}</div></div>
-        <div class="fighter f-b ${b.medio === "aire" ? "flying" : ""}"><div class="bob">${spriteHTML(b)}</div></div>
+        <div class="fighter f-a ${a.medio === "aire" ? "flying" : ""}"><div class="bob">${spriteHTML(a)}${armaHTML(armas.a)}</div></div>
+        <div class="fighter f-b ${b.medio === "aire" ? "flying" : ""}"><div class="bob">${spriteHTML(b)}${armaHTML(armas.b)}</div></div>
       </div>
       ${arena === "oceano" || arena === "rio" ? '<div class="water"></div>' : ""}
       ${arena === "nieve" ? '<div class="snow"></div>' : ""}
@@ -95,6 +99,7 @@ function montarEscenario(cont, a, b, arena) {
     floor: cont.querySelector(".floor"),
     f: { a: cont.querySelector(".f-a"), b: cont.querySelector(".f-b") },
     hp: { a: cont.querySelector(".hp-a i"), b: cont.querySelector(".hp-b i") },
+    arma: { a: cont.querySelector(".f-a .arma-sprite"), b: cont.querySelector(".f-b .arma-sprite") },
     banner: cont.querySelector(".banner"),
     texto: cont.querySelector(".commentary p"),
     skipBtn: cont.querySelector(".btn-skip"),
@@ -122,7 +127,7 @@ function reiniciarClase(el, clase) {
  * Corre la animación dentro de `cont`. Devuelve una promesa con el resultado,
  * o null si se canceló porque empezó otra pelea.
  */
-async function animarPelea(cont, a, b, arena, p) {
+async function animarPelea(cont, a, b, arena, armas) {
   if (pelea.actual) pelea.actual.cancelar();
 
   const ctrl = { skip: false, cancelado: false, esperas: [] };
@@ -147,9 +152,18 @@ async function animarPelea(cont, a, b, arena, p) {
           });
         });
 
-  const g = guion(p);
+  // ¿Sabrán usar el arma? Se decide antes, y define la probabilidad real de esta pelea.
+  const usa = {
+    a: !!armas.a && Math.random() < probUsoArma(a, armas.a),
+    b: !!armas.b && Math.random() < probUsoArma(b, armas.b),
+  };
+  const pReal = probabilidad(usa.a ? conArma(a, armas.a) : a, usa.b ? conArma(b, armas.b) : b, arena);
+  const pEsperada = probabilidadConArmas(a, b, arena, armas.a, armas.b);
+  const g = guion(pReal);
+  g.pW = g.ganador === "a" ? pEsperada : 1 - pEsperada;
+  g.sorpresa = g.pW < 0.5;
   const L = { a, b };
-  const ui = montarEscenario(cont, a, b, arena);
+  const ui = montarEscenario(cont, a, b, arena, armas);
   const vida = { a: 100, b: 100 };
   const decir = (t) => (ui.texto.innerHTML = t);
   ui.skipBtn.onclick = ctrl.saltar;
@@ -170,11 +184,26 @@ async function animarPelea(cont, a, b, arena, p) {
     await esperar(1600);
   }
 
+  for (const side of ["a", "b"]) {
+    if (!armas[side]) continue;
+    decir(`${ARMAS[armas[side]].emoji} Alguien le lanza ${ARMAS[armas[side]].articulo} a <b>${L[side].nombre}</b>… ¿sabrá usarl${ARMAS[armas[side]].lo === "la" ? "a" : "o"}?`);
+    reiniciarClase(ui.arma[side], "arma-duda");
+    await esperar(1600);
+    ui.arma[side].classList.remove("arma-duda");
+    ui.arma[side].classList.add(usa[side] ? "arma-ok" : "arma-caida");
+    decir(fraseArma(L[side], armas[side], usa[side]));
+    await esperar(2300);
+  }
+
   for (let i = 0; i < g.turnos.length && !ctrl.skip; i++) {
     const t = g.turnos[i];
     const atk = t.quien;
     const def = atk === "a" ? "b" : "a";
-    const golpe = elegir(GOLPES[L[atk].id] || GOLPES_CATEGORIA[L[atk].categoria]);
+    const conElArma = usa[atk] && Math.random() < 0.55;
+    const esHumano = L[atk].categoria === "humano" || L[atk].categoria === "paises";
+    const golpe = conElArma
+      ? [ARMAS[armas[atk]].golpe + (!esHumano && Math.random() < 0.5 ? " (nadie entiende cómo lo sostiene)" : ""), ARMAS[armas[atk]].emoji]
+      : elegir(GOLPES[L[atk].id] || GOLPES_CATEGORIA[L[atk].categoria]);
     const critico = t.dano >= 35;
     const ultimo = i === g.turnos.length - 1;
 
@@ -225,6 +254,14 @@ async function animarPelea(cont, a, b, arena, p) {
 
   if (ctrl.cancelado) return null;
 
+  // Si se saltó, igual mostramos qué pasó con las armas
+  for (const side of ["a", "b"]) {
+    if (armas[side]) {
+      ui.arma[side].classList.remove("arma-duda");
+      ui.arma[side].classList.add(usa[side] ? "arma-ok" : "arma-caida");
+    }
+  }
+
   // Estado final (también si se saltó)
   const W = g.ganador;
   const P = g.perdedor;
@@ -242,9 +279,11 @@ async function animarPelea(cont, a, b, arena, p) {
     efecto(ui.stage, "confeti", elegir(["🎉", "✨", "🎊", "⭐"]), rand(0, ui.stage.clientWidth), rand(-10, 40));
   }
   decir(
-    g.sorpresa
+    (g.sorpresa
       ? `😱 ¡SORPRESA TOTAL! <b>${L[W].nombre}</b> gana contra todo pronóstico (solo tenía ${Math.round(g.pW * 100)}% de probabilidad).`
-      : `🏆 ¡<b>${L[W].nombre}</b> gana por K.O.! ${vida[W] > 70 ? "Casi sin despeinarse." : vida[W] < 25 ? "Pero quedó hecho pedazos." : ""}`
+      : `🏆 ¡<b>${L[W].nombre}</b> gana por K.O.! ${vida[W] > 70 ? "Casi sin despeinarse." : vida[W] < 25 ? "Pero quedó hecho pedazos." : ""}`) +
+      (usa[W] && armas[W] ? ` Gracias en parte a ${ARMAS[armas[W]].articulo} ${ARMAS[armas[W]].emoji}.` : "") +
+      (armas[P] && !usa[P] ? ` Quizás le habría ido mejor si hubiera sabido usar ${ARMAS[armas[P]].articulo}.` : "")
   );
   ui.skipBtn.remove();
   pelea.actual = null;

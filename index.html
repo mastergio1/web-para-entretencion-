@@ -26,9 +26,17 @@
     <section class="ring" aria-label="Luchadores">
       <h2>2 · Elige a los luchadores</h2>
       <div class="ring-grid">
-        <button class="slot" id="slot-a" data-side="a"></button>
+        <div class="corner">
+          <button class="slot" id="slot-a" data-side="a"></button>
+          <label class="arma-pick">Arma <select id="arma-a" aria-label="Arma del luchador rojo"></select></label>
+          <small class="arma-info" id="arma-info-a"></small>
+        </div>
         <div class="vs">VS</div>
-        <button class="slot" id="slot-b" data-side="b"></button>
+        <div class="corner">
+          <button class="slot" id="slot-b" data-side="b"></button>
+          <label class="arma-pick">Arma <select id="arma-b" aria-label="Arma del luchador azul"></select></label>
+          <small class="arma-info" id="arma-info-b"></small>
+        </div>
       </div>
       <div class="actions">
         <button id="btn-random" class="btn ghost">🎲 Pelea aleatoria</button>
@@ -65,6 +73,7 @@
 
   <script src="js/data.js"></script>
   <script src="js/engine.js"></script>
+  <script src="js/armas.js"></script>
   <script src="js/golpes.js"></script>
   <script src="js/fight.js"></script>
   <script src="js/app.js"></script>

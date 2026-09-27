@@ -18,6 +18,7 @@ const state = {
   a: byId.gorila,
   b: byId.tigre,
   arena: "selva",
+  arma: { a: null, b: null },
   pickingSide: null,
   pickerCat: "todos",
   rosterCat: "todos",
@@ -102,6 +103,36 @@ function renderSlot(side) {
 function renderSlots() {
   renderSlot("a");
   renderSlot("b");
+  renderArmaInfo("a");
+  renderArmaInfo("b");
+}
+
+/* ───── armas ───── */
+function initArmas() {
+  for (const side of ["a", "b"]) {
+    const sel = $("#arma-" + side);
+    sel.innerHTML =
+      `<option value="">✋ Sin arma</option>` +
+      Object.entries(ARMAS).map(([k, w]) => `<option value="${k}">${w.emoji} ${w.nombre}</option>`).join("");
+    sel.onchange = () => {
+      state.arma[side] = sel.value || null;
+      renderArmaInfo(side);
+      ocultarResultado();
+    };
+  }
+}
+
+function renderArmaInfo(side) {
+  const id = state.arma[side];
+  $("#arma-" + side).value = id || "";
+  const el = $("#arma-info-" + side);
+  if (!id) {
+    el.textContent = "";
+    return;
+  }
+  const pct = Math.round(probUsoArma(state[side], id) * 100);
+  el.textContent =
+    pct >= 90 ? `✅ ${pct}%: sabe usarla` : pct >= 30 ? `🤔 ${pct}% de que sepa usarla` : `🤡 ${pct}% de que sepa usarla`;
 }
 
 /* ───── picker ───── */
@@ -152,13 +183,27 @@ function ocultarResultado() {
   $("#compare").hidden = true;
 }
 
+function razonesArmas() {
+  const out = [];
+  for (const side of ["a", "b"]) {
+    const id = state.arma[side];
+    if (!id) continue;
+    const f = state[side];
+    const w = ARMAS[id];
+    const pct = Math.round(probUsoArma(f, id) * 100);
+    const extra = HABILIDAD_ARMAS[f.id] ? " " + HABILIDAD_ARMAS[f.id][1] : "";
+    out.push({ favorece: f.id, texto: `${w.emoji} ${f.nombre} tiene ${w.articulo}: ${pct}% de probabilidad de saber usarl${w.lo === "la" ? "a" : "o"}.${extra}` });
+  }
+  return out;
+}
+
 function pelear() {
   const { a, b, arena } = state;
-  const p = probabilidad(a, b, arena);
+  const p = probabilidadConArmas(a, b, arena, state.arma.a, state.arma.b);
   const ganador = p >= 0.5 ? a : b;
   const pg = Math.max(p, 1 - p);
   const pctA = Math.round(p * 100);
-  const lista = razones(a, b, arena)
+  const lista = [...razonesArmas(), ...razones(a, b, arena)]
     .map((r) => {
       const cls = r.favorece === a.id ? "fav-a" : r.favorece === b.id ? "fav-b" : "fav-n";
       return `<li class="${cls}">${r.texto}</li>`;
@@ -202,18 +247,18 @@ function pelear() {
   $("#btn-share").onclick = () => compartir(ganador, pg);
   renderVotos();
   res.scrollIntoView({ behavior: "smooth", block: "start" });
-  correrAnimacion(p);
+  correrAnimacion();
 }
 
-async function correrAnimacion(p) {
+async function correrAnimacion() {
   const { a, b, arena } = state;
-  const r = await animarPelea($("#fight"), a, b, arena, p);
+  const r = await animarPelea($("#fight"), a, b, arena, { ...state.arma });
   if (!r) return;
   ultimaPelea = r;
   const rev = document.createElement("button");
   rev.className = "btn primary small";
   rev.textContent = "🔁 Revancha";
-  rev.onclick = () => correrAnimacion(p);
+  rev.onclick = () => correrAnimacion();
   r.btns.appendChild(rev);
   const analisis = $("#analysis");
   if (analisis.hidden) {
@@ -298,6 +343,10 @@ function aleatorio() {
   // Evita arenas absurdas (tiburón en la sabana) la mayoría de las veces
   const buenas = arenas.filter((k) => adaptacion(state.a, k) > 0.3 && adaptacion(state.b, k) > 0.3);
   state.arena = (buenas.length ? buenas : arenas)[Math.floor(Math.random() * (buenas.length || arenas.length))];
+  const armas = Object.keys(ARMAS);
+  for (const side of ["a", "b"]) {
+    state.arma[side] = Math.random() < 0.35 ? armas[Math.floor(Math.random() * armas.length)] : null;
+  }
   renderArenas();
   renderSlots();
   pelear();
@@ -322,6 +371,7 @@ function renderRoster() {
         <p><b>💪</b> ${f.fortaleza}</p>
         <p><b>⚠️</b> ${f.debilidad}</p>
         <p class="dato">💡 ${f.dato}</p>
+        <p class="small">🗡️ Habilidad con armas: <b>${Math.round(habilidadArmas(f) * 100)}%</b></p>
         <div class="card-actions">
           <button class="btn small vote-a" data-set="a" data-id="${f.id}">🔴 Esquina roja</button>
           <button class="btn small vote-b" data-set="b" data-id="${f.id}">🔵 Esquina azul</button>
@@ -354,6 +404,7 @@ $("#picker").addEventListener("click", (e) => {
   if (e.target === e.currentTarget) e.currentTarget.close();
 });
 
+initArmas();
 renderArenas();
 renderSlots();
 renderRoster();

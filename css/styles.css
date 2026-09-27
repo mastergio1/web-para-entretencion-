@@ -52,7 +52,9 @@ h3 { margin: 0; }
 .chips.small .chip { padding: 5px 10px; font-size: 0.85rem; }
 
 /* ── ring ── */
-.ring-grid { display: grid; grid-template-columns: 1fr auto 1fr; gap: 16px; align-items: center; }
+.ring-grid { display: grid; grid-template-columns: 1fr auto 1fr; gap: 16px; align-items: stretch; }
+.ring-grid .vs { align-self: center; }
+.corner .slot { flex: 1; justify-content: center; }
 .slot {
   display: flex; flex-direction: column; align-items: center; gap: 4px;
   background: var(--card); color: var(--text); font: inherit;
@@ -66,6 +68,13 @@ h3 { margin: 0; }
 .slot em { font-style: normal; font-size: 0.8rem; color: var(--gold); margin-top: 4px; }
 .big-emoji { font-size: 3.5rem; line-height: 1.1; }
 .slot .big-emoji { font-size: clamp(3.5rem, 12vw, 5.5rem); }
+.corner { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+.arma-pick { display: flex; align-items: center; gap: 8px; font-size: 0.85rem; color: var(--muted); }
+.arma-pick select {
+  flex: 1; min-width: 0; padding: 8px; border-radius: 10px; border: 1px solid var(--line);
+  background: var(--bg-2); color: var(--text); font: inherit; font-size: 0.9rem;
+}
+.arma-info { min-height: 1.2em; text-align: center; color: var(--gold); font-size: 0.8rem; }
 .vs { font-size: clamp(2.2rem, 7vw, 4rem); color: var(--gold); text-shadow: 0 0 20px rgba(255, 182, 39, 0.5); }
 .actions { display: flex; gap: 12px; justify-content: center; margin-top: 20px; flex-wrap: wrap; }
 
@@ -245,6 +254,21 @@ dialog::backdrop { background: rgba(0, 0, 0, 0.7); backdrop-filter: blur(3px); }
 .fighter.win .sprite { animation: victoria 0.6s ease-in-out infinite alternate; }
 @keyframes victoria { to { translate: 0 -18px; } }
 
+.bob { position: relative; }
+.arma-sprite {
+  position: absolute; bottom: 8%; font-size: clamp(1.6rem, 5vw, 2.8rem); z-index: 3;
+  transition: transform 0.6s, bottom 0.6s, opacity 0.6s, filter 0.6s;
+}
+.f-a .arma-sprite { right: -14%; transform: rotate(20deg); }
+.f-b .arma-sprite { left: -14%; transform: scaleX(-1) rotate(20deg); }
+.arma-sprite.arma-duda { animation: duda 0.5s ease-in-out 3; }
+@keyframes duda { 50% { translate: 0 -14px; } }
+.arma-sprite.arma-ok { filter: drop-shadow(0 0 10px gold) drop-shadow(0 0 4px gold); bottom: 30%; }
+.f-a .arma-sprite.arma-ok { transform: rotate(-25deg) scale(1.2); }
+.f-b .arma-sprite.arma-ok { transform: scaleX(-1) rotate(-25deg) scale(1.2); }
+.arma-sprite.arma-caida { bottom: -12%; opacity: 0.6; filter: grayscale(0.8); }
+.f-a .arma-sprite.arma-caida { transform: rotate(100deg); }
+.f-b .arma-sprite.arma-caida { transform: scaleX(-1) rotate(100deg); }
 .swarm { position: relative; width: 1em; height: 1em; }
 .swarm span {
   position: absolute; left: calc(50% + var(--x)); top: calc(50% + var(--y)); font-size: 0.32em;
@@ -292,6 +316,7 @@ footer { text-align: center; color: var(--muted); font-size: 0.8rem; padding: 24
   .ring-grid { gap: 8px; }
   .slot { padding: 14px 6px; }
   .slot strong { font-size: 0.95rem; }
+  .arma-pick { flex-direction: column; align-items: stretch; gap: 2px; }
   .winner .big-emoji { font-size: 3.5rem; }
   .winner h3 { font-size: 2rem; }
   .armas { grid-template-columns: 1fr; }

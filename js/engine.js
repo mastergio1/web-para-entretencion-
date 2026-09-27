@@ -107,7 +107,7 @@ function razones(a, b, arena) {
 
   // Enjambres
   [a, b].forEach((x) => {
-    if (x.enjambre) add(4, x.id, `${x.nombre} son ${x.cantidad}: no se les puede noquear de un golpe.`);
+    if (x.enjambre) add(4, x.id, `${x.nombre}: ${x.cantidad}. No se le puede noquear de un solo golpe.`);
   });
 
   // Peso (no aplica si hay enjambres: su peso real engaña)

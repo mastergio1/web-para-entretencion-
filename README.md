@@ -15,6 +15,7 @@ Para publicarla gratis: GitHub Pages (Settings → Pages → rama principal) o V
 |---|---|
 | `js/data.js` | Luchadores, categorías y arenas. **Para agregar un animal, copia un bloque y edítalo.** |
 | `js/engine.js` | Motor de combate: probabilidad de victoria y razones. |
+| `js/armas.js` | Armas rudimentarias: ¿el luchador sabrá usarla? + frases absurdas. |
 | `js/golpes.js` | Golpes de cada luchador y eventos absurdos para la animación. |
 | `js/fight.js` | Animación de la pelea (el ganador se sortea con la probabilidad del motor). |
 | `js/app.js` | Interfaz: selector, resultado, votos, enciclopedia. |
@@ -31,6 +32,7 @@ P(A gana) = poderA³ / (poderA³ + poderB³)
 - **Atributos 0-100 (estimados):** ataque, defensa, fuerza relativa, agilidad, ferocidad, resistencia, inteligencia.
 - **Terreno:** un tiburón en la sabana no tiene nada que hacer; un gorila en el océano tampoco.
 - **Enjambres:** usan un `pesoEfectivo` (20.000 abejas no se noquean de un manotazo).
+- **Armas:** cada luchador tiene una probabilidad de saber usarla (humanos ~95%, chimpancé 60%, tiburón 3%). La probabilidad mostrada promedia los casos en que la usa y en que no; en la animación se sortea si la usa.
 - **Especiales:** ventajas concretas contra ciertos rivales (las abejas asustan a los elefantes, el tejón melero asalta colmenas…).
 
 Es entretenimiento: los números sirven para discutir, no para cerrar la discusión. 🍻
