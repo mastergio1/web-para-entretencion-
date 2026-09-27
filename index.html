@@ -49,6 +49,35 @@
 
     <section class="compare" id="compare" hidden aria-label="Comparación de estadísticas"></section>
 
+    <section class="fiesta" aria-labelledby="fiesta-titulo">
+      <h2 id="fiesta-titulo">Modo fiesta</h2>
+      <p class="muted intro">Anoten sus nombres y pásense el celular. Antes de cada pelea todos apuestan. Acertar da 1 punto; acertar a un ganador que tenía menos de 35% da 3.</p>
+      <form id="fiesta-form" class="fiesta-form">
+        <input id="fiesta-nombre" type="text" placeholder="Nombre de un amigo" maxlength="20" autocomplete="off" aria-label="Nombre del jugador" />
+        <button class="btn small" type="submit">Agregar jugador</button>
+      </form>
+      <ol id="fiesta-tabla" class="tabla"></ol>
+      <button id="fiesta-reset" class="btn ghost small" type="button" hidden>Poner puntos en cero</button>
+    </section>
+
+    <section class="torneo" aria-labelledby="torneo-titulo">
+      <h2 id="torneo-titulo">Torneo de la noche</h2>
+      <p class="muted intro">Ocho luchadores al azar, eliminación directa y un terreno distinto en cada pelea. Si hay jugadores en el modo fiesta, también apuestan acá.</p>
+      <div class="torneo-acciones">
+        <button id="torneo-siguiente" class="btn primary small" type="button">Siguiente pelea</button>
+        <button id="torneo-rapido" class="btn ghost small" type="button">Simular el resto</button>
+        <button id="torneo-nuevo" class="btn ghost small" type="button">Sortear otros 8</button>
+      </div>
+      <div class="bracket-scroll"><div id="bracket" class="bracket"></div></div>
+      <div id="torneo-pelea" class="fight"></div>
+    </section>
+
+    <section class="opinion" aria-labelledby="opinion-titulo">
+      <h2 id="opinion-titulo">Lo que opina la gente</h2>
+      <p id="opinion-origen" class="muted intro"></p>
+      <div id="opinion-listas" class="opinion-listas"></div>
+    </section>
+
     <section class="roster-section" aria-label="Enciclopedia de luchadores">
       <h2>Enciclopedia de luchadores</h2>
       <div id="roster-filters" class="chips"></div>
@@ -77,6 +106,9 @@
   <script src="js/armas.js"></script>
   <script src="js/golpes.js"></script>
   <script src="js/fight.js"></script>
+  <script src="js/votos.js"></script>
+  <script src="js/fiesta.js"></script>
+  <script src="js/torneo.js"></script>
   <script src="js/app.js"></script>
 </body>
 </html>

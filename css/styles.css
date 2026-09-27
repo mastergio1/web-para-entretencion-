@@ -240,6 +240,99 @@ dialog::backdrop { background: rgba(10, 8, 14, 0.75); backdrop-filter: blur(3px)
 
 footer { text-align: center; color: var(--muted); font-size: 0.8rem; padding: 24px 16px 40px; max-width: 700px; margin: 0 auto; }
 
+/* ── votos ── */
+.btn.elegido { background: var(--bone); color: var(--ink); border-color: var(--bone); }
+#vote-res { display: grid; gap: 4px; margin: 0 0 12px; }
+.votos-bar { display: flex; height: 10px; border-radius: 3px; overflow: hidden; background: var(--line); }
+.votos-bar i { display: block; height: 100%; transition: width 0.5s; }
+.votos-bar .pa { background: var(--red); }
+.votos-bar .pb { background: var(--blue); }
+.votos-num { font-weight: 800; font-variant-numeric: tabular-nums; }
+.intro { max-width: 65ch; margin: -4px 0 16px; }
+
+/* ── modo fiesta ── */
+.fiesta, .torneo, .opinion { scroll-margin-top: 16px; }
+.fiesta-form { display: flex; gap: 8px; flex-wrap: wrap; max-width: 520px; }
+.fiesta-form input {
+  flex: 1; min-width: 0; padding: 10px 12px; border-radius: 10px; border: 2px solid var(--line);
+  background: var(--surface); color: var(--bone); font: inherit;
+}
+.tabla { list-style: none; padding: 0; margin: 14px 0 10px; display: grid; gap: 6px; max-width: 520px; counter-reset: pos; }
+.tabla li {
+  display: grid; grid-template-columns: 2em 1fr auto auto auto; align-items: center; gap: 10px;
+  padding: 8px 10px; background: var(--surface); border: 2px solid var(--line); border-radius: 10px; counter-increment: pos;
+}
+.tabla li::before { content: counter(pos); font-family: var(--display); font-size: 1.3rem; color: var(--muted); text-align: center; }
+.tabla li.lider { border-color: var(--mustard); }
+.tabla li.lider::before { content: "★"; color: var(--mustard); }
+.tabla li.vacio { display: block; color: var(--muted); border-style: dashed; counter-increment: none; }
+.tabla li.vacio::before { content: none; }
+.tabla .nombre { font-weight: 800; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.tabla .stats { color: var(--muted); font-size: 0.8rem; font-variant-numeric: tabular-nums; }
+.tabla .puntos { font-variant-numeric: tabular-nums; color: var(--mustard); }
+.quitar { background: none; border: none; color: var(--muted); cursor: pointer; font-size: 0.9rem; padding: 4px; }
+.quitar:hover { color: var(--red); }
+
+.apuestas { background: var(--surface); border: 3px solid var(--ink); outline: 2px solid var(--bone); border-radius: 6px; padding: 18px; }
+.apuestas-vs { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 12px; margin: 6px 0 16px; text-align: center; }
+.apuestas-vs .lado { display: flex; flex-direction: column; align-items: center; gap: 6px; font-weight: 800; min-width: 0; }
+.apuestas-vs .big-emoji { font-size: 2.4rem; }
+.vs-mini { font-family: var(--display); font-size: 2rem; color: var(--mustard); text-shadow: 2px 2px 0 var(--red); }
+.apuestas-lista { list-style: none; padding: 0; margin: 0; display: grid; gap: 8px; }
+.apuestas-lista li { display: grid; grid-template-columns: minmax(80px, 1fr) 1fr 1fr; gap: 8px; align-items: center; }
+.apuestas-lista .nombre { font-weight: 800; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.apuestas-lista .btn { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.vote-a.elegido { background: var(--red); border-color: var(--red); color: #fff; }
+.vote-b.elegido { background: var(--blue); border-color: var(--blue); color: #fff; }
+.btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.btn.primary:disabled { transform: none; box-shadow: none; }
+.fiesta-res { margin-top: 14px; padding: 12px 16px; background: var(--surface); border: 2px solid var(--line); border-radius: 10px; }
+.fiesta-res ul { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 8px; }
+.fiesta-res li { display: flex; gap: 8px; padding: 4px 10px; border-radius: 999px; background: var(--surface-2); font-size: 0.9rem; }
+.fiesta-res li.acierto { background: rgba(69, 212, 131, 0.18); color: var(--green); }
+.fiesta-res li.fallo { color: var(--muted); }
+
+/* ── torneo ── */
+.torneo-acciones { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 14px; }
+.bracket-scroll { overflow-x: auto; padding-bottom: 6px; }
+.bracket { display: grid; grid-template-columns: repeat(4, minmax(170px, 1fr)); gap: 14px; min-width: 720px; align-items: stretch; }
+.bk-ronda { display: flex; flex-direction: column; gap: 10px; }
+.bk-peleas { flex: 1; display: flex; flex-direction: column; justify-content: space-around; gap: 10px; }
+.bk-ronda h4 { margin: 0; }
+.bk-pelea { background: var(--surface); border: 2px solid var(--line); border-radius: 10px; padding: 6px; display: grid; gap: 4px; }
+.bk-pelea.proxima { border-color: var(--mustard); box-shadow: 0 0 0 3px rgba(255, 194, 61, 0.2); }
+.bk-pelea small { color: var(--muted); font-size: 0.72rem; padding: 0 4px; }
+.bk-fila { display: flex; align-items: center; gap: 8px; padding: 4px 6px; border-radius: 6px; font-size: 0.88rem; font-weight: 600; min-width: 0; }
+.bk-fila span:last-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.bk-emoji { width: 1.6em; text-align: center; font-size: 1.1rem; flex-shrink: 0; }
+.bk-fila.gana { background: rgba(255, 194, 61, 0.16); color: var(--mustard); font-weight: 800; }
+.bk-fila.pierde { color: var(--muted); text-decoration: line-through; opacity: 0.7; }
+.bk-fila.vacia { color: var(--muted); font-style: italic; }
+.bk-trofeo {
+  display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 16px 10px; text-align: center;
+  border: 2px dashed var(--line); border-radius: 12px;
+}
+.bk-trofeo .copa { font-family: var(--display); font-size: 2.6rem; color: var(--muted); line-height: 1; }
+.bk-trofeo.listo { border: 3px solid var(--mustard); background: rgba(255, 194, 61, 0.1); animation: pop 0.5s ease-out; }
+.bk-trofeo.listo b { font-family: var(--display); font-weight: 400; font-size: 1.5rem; color: var(--mustard); }
+#torneo-pelea:not(:empty) { margin-top: 18px; }
+
+/* ── lo que opina la gente ── */
+.opinion-listas { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+.opinion-listas ol { list-style: none; padding: 0; margin: 0; display: grid; gap: 8px; }
+.opinion-listas li.vacio { color: var(--muted); padding: 12px; border: 2px dashed var(--line); border-radius: 10px; }
+.duelo {
+  width: 100%; display: grid; gap: 4px; text-align: left; padding: 10px 12px; cursor: pointer; font: inherit; color: var(--bone);
+  background: var(--surface); border: 2px solid var(--line); border-radius: 10px;
+}
+.duelo:hover { border-color: var(--mustard); }
+.duelo-nombres { font-weight: 800; }
+.duelo-nombres em { font-style: normal; color: var(--muted); font-weight: 400; margin: 0 4px; }
+.duelo-meta { font-size: 0.78rem; color: var(--muted); }
+.duelo-pct { display: flex; justify-content: space-between; font-size: 0.8rem; font-variant-numeric: tabular-nums; }
+.duelo-pct b:first-child { color: var(--red); }
+.duelo-pct b:last-child { color: var(--blue); }
+
 /* ═════════════ ESCENARIO DE PELEA ═════════════ */
 .stage {
   position: relative; height: clamp(280px, 46vw, 400px); border-radius: 6px; overflow: hidden; isolation: isolate;
@@ -483,4 +576,9 @@ footer { text-align: center; color: var(--muted); font-size: 0.8rem; padding: 24
   .hp span { font-size: 0.85rem; }
   .hud-vs { font-size: 1.3rem; }
   .btn.primary { font-size: 1.35rem; padding: 8px 28px; }
+  .opinion-listas { grid-template-columns: 1fr; }
+  .tabla li { grid-template-columns: 1.6em 1fr auto auto; }
+  .tabla .stats { display: none; }
+  .apuestas-lista li { grid-template-columns: 1fr 1fr; }
+  .apuestas-lista .nombre { grid-column: 1 / -1; }
 }

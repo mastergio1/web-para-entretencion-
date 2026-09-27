@@ -4,10 +4,23 @@ El debate de siempre entre amigos —*¿quién gana, un gorila o un tigre?*— c
 
 Elige dos luchadores (animales de sabana, selva, agua, nieve, aire, bichos y enjambres… y humanos de todo tipo), elige el terreno y **mira la pelea animada**: barras de vida, golpes, un narrador y momentos absurdos. El favorito gana casi siempre… pero a veces hay sorpresa. Después, la web muestra lo que dicen los datos, **por qué**, y cada uno vota lo que cree.
 
+## Qué se puede hacer
+
+- **Pelea 1 contra 1** animada, con armas rudimentarias y legendarias.
+- **Modo fiesta:** anoten sus nombres, apuesten antes de cada pelea y la web lleva los puntos (se guarda en el dispositivo).
+- **Torneo de la noche:** 8 luchadores al azar, eliminación directa hasta el campeón.
+- **Lo que opina la gente:** los duelos más votados y los más polémicos. Abierta desde Claude, suma los votos de todos; en otro lugar, los de ese dispositivo.
+- **Enciclopedia** con la ficha de cada luchador.
+
 ## Cómo usarla
 
 Es una web estática, sin instalación: abre `index.html` en el navegador.
-Para publicarla gratis: GitHub Pages (Settings → Pages → rama principal) o Vercel/Netlify.
+
+### Publicarla gratis con GitHub Pages
+
+1. En GitHub: **Settings → Pages**.
+2. En *Build and deployment*, elige **Deploy from a branch**, rama **main** y carpeta **/ (root)**. Guarda.
+3. En un par de minutos queda en `https://<tu-usuario>.github.io/web-para-entretencion-/`.
 
 ## Estructura
 
@@ -18,6 +31,9 @@ Para publicarla gratis: GitHub Pages (Settings → Pages → rama principal) o V
 | `js/armas.js` | Armas rudimentarias: ¿el luchador sabrá usarla? + frases absurdas. |
 | `js/golpes.js` | Golpes de cada luchador y eventos absurdos para la animación. |
 | `js/fight.js` | Animación de la pelea (el ganador se sortea con la probabilidad del motor). |
+| `js/votos.js` | Votos: compartidos (dentro de Claude) o en el dispositivo. |
+| `js/fiesta.js` | Modo fiesta: jugadores, apuestas y puntos. |
+| `js/torneo.js` | Torneo de 8 luchadores. |
 | `js/app.js` | Interfaz: selector, resultado, votos, enciclopedia. |
 | `css/styles.css` | Estilos (responsive). |
 

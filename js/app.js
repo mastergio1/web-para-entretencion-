@@ -24,19 +24,7 @@ const state = {
   rosterCat: "todos",
 };
 
-/* ───── almacenamiento local (votos) ───── */
-function leerVotos() {
-  try {
-    return JSON.parse(localStorage.getItem("qg-votos") || "{}");
-  } catch {
-    return {};
-  }
-}
-function guardarVotos(v) {
-  try {
-    localStorage.setItem("qg-votos", JSON.stringify(v));
-  } catch {}
-}
+/* ───── votos ───── */
 function claveDuelo() {
   return [state.a.id, state.b.id].sort().join("|") + "@" + state.arena;
 }
@@ -276,17 +264,34 @@ function pelear() {
   correrAnimacion();
 }
 
-async function correrAnimacion() {
-  const { a, b, arena } = state;
+/*
+ * Una pelea completa dentro de `cont`: apuestas (si hay modo fiesta),
+ * animación y resultado de las apuestas. La usan el ring principal y el torneo.
+ */
+async function jugarPelea(cont, a, b, arena, armas) {
+  const apuestas = await Fiesta.apuestas(cont, a, b);
   let r;
   try {
-    r = await animarPelea($("#fight"), a, b, arena, { ...state.arma });
+    r = await animarPelea(cont, a, b, arena, armas);
   } catch (e) {
-    // Si la animación falla, igual mostramos el análisis.
+    // Si la animación falla, igual seguimos.
     console.error(e);
     pelea.actual = null;
-    r = { ganador: null, sorpresa: false, btns: $("#fight .stage-btns") || $("#fight") };
+    r = { ganador: null, sorpresa: false, btns: cont.querySelector(".stage-btns") || cont };
   }
+  if (!r) return null;
+  if (r.ganador) {
+    const lado = r.ganador.id === a.id ? "a" : "b";
+    const p = probabilidadConArmas(a, b, arena, armas.a, armas.b);
+    const resumen = Fiesta.resolver(apuestas, lado, lado === "a" ? p : 1 - p);
+    if (resumen) r.btns.insertAdjacentHTML("afterend", resumen);
+  }
+  return r;
+}
+
+async function correrAnimacion() {
+  const { a, b, arena } = state;
+  const r = await jugarPelea($("#fight"), a, b, arena, { ...state.arma });
   if (!r) return;
   ultimaPelea = r.ganador ? r : null;
   const rev = document.createElement("button");
@@ -303,25 +308,69 @@ async function correrAnimacion() {
 }
 
 function votar(id) {
-  const v = leerVotos();
-  const k = claveDuelo();
-  v[k] = v[k] || {};
-  v[k][id] = (v[k][id] || 0) + 1;
-  guardarVotos(v);
+  Votos.votar(claveDuelo(), id);
   renderVotos();
 }
 
 function renderVotos() {
-  const v = leerVotos()[claveDuelo()];
   const el = $("#vote-res");
   if (!el) return;
-  if (!v) {
-    el.textContent = "Vota y pásale el celular a tus amigos.";
+  const k = claveDuelo();
+  const c = Votos.conteo(k);
+  const va = c[state.a.id] || 0;
+  const vb = c[state.b.id] || 0;
+  const total = va + vb;
+  const mio = Votos.miVoto(k);
+  document.querySelectorAll("#result [data-v]").forEach((b) => b.classList.toggle("elegido", b.dataset.v === mio));
+  const origen = Votos.modo === "global" ? "de todos los que usan esta página" : "en este dispositivo";
+  if (!total) {
+    el.innerHTML = Votos.modo === "global" ? "Nadie ha votado este duelo todavía. Sé el primero." : "Vota y pásale el celular a tus amigos.";
     return;
   }
-  const va = v[state.a.id] || 0;
-  const vb = v[state.b.id] || 0;
-  el.textContent = `Votos en este dispositivo: ${state.a.nombre} ${va} — ${vb} ${state.b.nombre}`;
+  const pa = Math.round((va / total) * 100);
+  el.innerHTML = `
+    <span class="votos-bar"><i class="pa" style="width:${pa}%"></i><i class="pb" style="width:${100 - pa}%"></i></span>
+    <span class="votos-num">${state.a.nombre} ${pa}% · ${100 - pa}% ${state.b.nombre}</span>
+    <small>${total} voto${total > 1 ? "s" : ""} ${origen}${mio ? " · tu voto: " + byId[mio].nombre : ""}</small>`;
+}
+
+/* ───── lo que opina la gente ───── */
+function renderOpinion() {
+  const cont = $("#opinion-listas");
+  if (!cont) return;
+  $("#opinion-origen").textContent =
+    Votos.modo === "global"
+      ? "Votos de todas las personas que usan esta página."
+      : "Votos guardados en este dispositivo. Abierta desde Claude, la página suma los votos de todos.";
+  const { masVotados, polemicos } = Votos.ranking();
+  const fila = (d) => {
+    const x = byId[d.x];
+    const y = byId[d.y];
+    const px = Math.round((d.vx / d.total) * 100);
+    return `
+      <li><button class="duelo" data-x="${d.x}" data-y="${d.y}" data-arena="${d.arena}">
+        <span class="duelo-nombres">${x.emoji} ${x.nombre} <em>vs</em> ${y.emoji} ${y.nombre}</span>
+        <span class="duelo-meta">${ARENAS[d.arena].nombre} · ${d.total} voto${d.total > 1 ? "s" : ""}</span>
+        <span class="votos-bar"><i class="pa" style="width:${px}%"></i><i class="pb" style="width:${100 - px}%"></i></span>
+        <span class="duelo-pct"><b>${px}%</b><b>${100 - px}%</b></span>
+      </button></li>`;
+  };
+  const vacio = `<li class="vacio">Todavía no hay votos. Pelea y vota para llenar esta lista.</li>`;
+  cont.innerHTML = `
+    <div><h4>Más votados</h4><ol>${masVotados.map(fila).join("") || vacio}</ol></div>
+    <div><h4>Más polémicos (casi empate)</h4><ol>${polemicos.map(fila).join("") || vacio}</ol></div>`;
+  cont.querySelectorAll(".duelo").forEach(
+    (btn) =>
+      (btn.onclick = () => {
+        state.a = byId[btn.dataset.x];
+        state.b = byId[btn.dataset.y];
+        state.arena = btn.dataset.arena;
+        renderArenas();
+        renderSlots();
+        ocultarResultado();
+        $(".ring").scrollIntoView({ behavior: "smooth" });
+      })
+  );
 }
 
 function compartir(ganador, pg) {
@@ -447,3 +496,11 @@ initArmas();
 renderArenas();
 renderSlots();
 renderRoster();
+Fiesta.init();
+Torneo.init();
+Votos.onChange(() => {
+  renderVotos();
+  renderOpinion();
+});
+renderOpinion();
+Votos.init();
