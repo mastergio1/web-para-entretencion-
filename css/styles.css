@@ -333,6 +333,73 @@ footer { text-align: center; color: var(--muted); font-size: 0.8rem; padding: 24
 .duelo-pct b:first-child { color: var(--red); }
 .duelo-pct b:last-child { color: var(--blue); }
 
+/* ── jugar en línea (acceso desde la portada) ── */
+.online-cta {
+  display: flex; gap: 16px; align-items: center; justify-content: space-between; flex-wrap: wrap;
+  margin-top: 28px; padding: 18px 20px; background: var(--surface); border: 3px solid var(--mustard); border-radius: var(--radius);
+  box-shadow: 6px 6px 0 rgba(255, 194, 61, 0.25);
+}
+.online-cta h2 { margin: 0; font-size: 1.9rem; }
+.online-cta p { margin: 4px 0 0; color: var(--muted); max-width: 52ch; }
+a.btn { display: inline-block; text-decoration: none; text-align: center; }
+
+.online-wrap { max-width: 1100px; margin: 0 auto; padding: 0 16px; }
+
+/* ── página de sala ── */
+.sala-top {
+  display: flex; justify-content: space-between; align-items: center; gap: 12px;
+  max-width: 760px; margin: 0 auto; padding: 14px 16px;
+}
+.sala-marca { font-family: var(--display); font-size: 1.7rem; color: var(--bone); text-decoration: none; letter-spacing: 0.02em; }
+.sala-marca span { color: var(--mustard); }
+.sala-codigo-top { font-family: var(--display); font-size: 1.4rem; letter-spacing: 0.12em; background: var(--mustard); color: var(--ink); padding: 2px 10px; border-radius: 6px; }
+.sala-main { max-width: 760px; margin: 0 auto; padding: 0 16px 48px; display: grid; gap: 18px; }
+.pantalla { display: grid; gap: 18px; }
+.sala-titulo { font-size: clamp(2.6rem, 10vw, 4rem); margin: 8px 0 0; line-height: 1; text-shadow: 3px 3px 0 var(--red); }
+.sala-estado { color: var(--muted); text-align: center; padding: 40px 0; }
+.campo { display: grid; gap: 6px; font-size: 0.78rem; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+.campo input, .campo select {
+  padding: 12px; border-radius: 10px; border: 2px solid var(--line); background: var(--surface); color: var(--bone);
+  font: inherit; font-size: 1rem; text-transform: none; letter-spacing: 0; font-weight: 600; min-width: 0; width: 100%;
+}
+#input-codigo { text-transform: uppercase; letter-spacing: 0.2em; font-family: var(--display); font-size: 1.5rem; }
+.sala-opciones { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.sala-opcion { display: grid; gap: 12px; align-content: start; padding: 16px; background: var(--surface); border: 2px solid var(--line); border-radius: var(--radius); }
+.sala-opcion h2 { margin: 0; font-size: 1.6rem; }
+.sala-error { color: #fff; background: rgba(255, 75, 58, 0.2); border: 2px solid var(--red); border-radius: 10px; padding: 10px 12px; margin: 0; }
+.invitar {
+  display: flex; justify-content: space-between; align-items: center; gap: 16px; flex-wrap: wrap;
+  padding: 16px; background: var(--surface); border: 2px solid var(--line); border-radius: var(--radius);
+}
+.invitar p { margin: 0; }
+.codigo-grande { font-family: var(--display); font-size: clamp(3rem, 14vw, 4.5rem); letter-spacing: 0.14em; color: var(--mustard); line-height: 1; text-shadow: 3px 3px 0 var(--red); }
+.invitar-botones { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
+.qr { background: var(--paper); padding: 8px; border-radius: 8px; line-height: 0; }
+.qr:empty { display: none; }
+.qr img, .qr canvas { display: block; max-width: 100%; }
+.aviso { text-align: center; color: var(--muted); margin: 0; padding: 10px; }
+.centro { text-align: center; margin: 0; }
+.arma-tag { font-weight: 600; color: var(--mustard); font-size: 0.78rem; }
+.botones-apuesta { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 12px; }
+.botones-apuesta .btn { padding: 16px 10px; font-size: 1rem; }
+.cuenta { text-align: center; margin: 10px 0 0; color: var(--muted); }
+.cuenta b { font-family: var(--display); font-size: 2rem; font-weight: 400; color: var(--mustard); margin-right: 4px; }
+.anfitrion { padding: 16px; background: var(--surface); border: 2px solid var(--mustard); border-radius: var(--radius); display: grid; gap: 12px; }
+.anfitrion h2 { margin: 0; font-size: 1.6rem; }
+.config-pelea { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.config-pelea .campo:nth-child(3) { grid-column: 1 / -1; }
+.tabla-sala h2 { margin: 0 0 4px; font-size: 1.6rem; }
+.tabla-sala .tabla { max-width: none; }
+.tabla li.fuera { opacity: 0.45; }
+.rol { font-style: normal; font-size: 0.68rem; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); margin-left: 4px; }
+.rol.tu { color: var(--mustard); }
+.sala-page .apuestas .winner { margin: 8px 0 12px; }
+@media (max-width: 560px) {
+  .sala-opciones { grid-template-columns: 1fr; }
+  .invitar { justify-content: center; text-align: center; }
+  .invitar-botones { justify-content: center; }
+}
+
 /* ═════════════ ESCENARIO DE PELEA ═════════════ */
 .stage {
   position: relative; height: clamp(280px, 46vw, 400px); border-radius: 6px; overflow: hidden; isolation: isolate;

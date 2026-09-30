@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>¿Quién Ganaría? · En línea</title>
+  <meta name="description" content="Juega ¿Quién ganaría? con tus amigos, cada uno desde su celular." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Bangers&family=Archivo:wght@400;600;800;900&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body class="sala-page">
+  <header class="sala-top">
+    <a href="index.html" class="sala-marca">¿Quién <span>ganaría</span>?</a>
+    <span id="sala-codigo-top" class="sala-codigo-top" hidden></span>
+  </header>
+
+  <main class="sala-main">
+    <p id="sala-estado" class="sala-estado">Conectando…</p>
+
+    <!-- Inicio: crear o unirse -->
+    <section id="pantalla-inicio" class="pantalla" hidden>
+      <h1 class="sala-titulo">Jugar en línea</h1>
+      <p class="muted">Cada uno desde su celular. Uno crea la sala, los demás entran con el código.</p>
+      <label class="campo">Tu nombre
+        <input id="input-nombre" type="text" maxlength="20" autocomplete="nickname" placeholder="Ej: Gio" />
+      </label>
+      <div class="sala-opciones">
+        <div class="sala-opcion">
+          <h2>Unirme a una sala</h2>
+          <label class="campo">Código de la sala
+            <input id="input-codigo" type="text" maxlength="5" autocomplete="off" autocapitalize="characters" placeholder="Ej: TGRZK" />
+          </label>
+          <button id="btn-unirme" class="btn primary" type="button">Entrar</button>
+        </div>
+        <div class="sala-opcion">
+          <h2>Crear una sala</h2>
+          <p class="muted small">Tú eliges las peleas y los demás apuestan desde su celular.</p>
+          <button id="btn-crear" class="btn ghost" type="button">Crear sala nueva</button>
+        </div>
+      </div>
+      <p id="inicio-error" class="sala-error" hidden></p>
+    </section>
+
+    <!-- Sala (lobby, apuestas, pelea, resultado) -->
+    <section id="pantalla-sala" class="pantalla" hidden>
+      <div id="bloque-invitar" class="invitar" hidden>
+        <div>
+          <p class="muted small">Código de la sala</p>
+          <p id="codigo-grande" class="codigo-grande"></p>
+          <div class="invitar-botones">
+            <button id="btn-copiar-link" class="btn small" type="button">Copiar link</button>
+            <a id="btn-whatsapp" class="btn small" target="_blank" rel="noopener">Mandar por WhatsApp</a>
+          </div>
+        </div>
+        <div id="qr" class="qr" aria-label="Código QR para entrar a la sala"></div>
+      </div>
+
+      <div id="bloque-escena"></div>
+
+      <div id="bloque-anfitrion" class="anfitrion" hidden>
+        <h2>Próxima pelea</h2>
+        <div class="config-pelea">
+          <label class="campo">Esquina roja <select id="cfg-a"></select></label>
+          <label class="campo">Esquina azul <select id="cfg-b"></select></label>
+          <label class="campo">Terreno <select id="cfg-arena"></select></label>
+          <label class="campo">Arma roja <select id="cfg-arma-a"></select></label>
+          <label class="campo">Arma azul <select id="cfg-arma-b"></select></label>
+        </div>
+        <p id="cfg-prob" class="muted small"></p>
+        <div class="stage-btns">
+          <button id="btn-sortear" class="btn ghost small" type="button">Sortear pelea</button>
+          <button id="btn-abrir" class="btn primary" type="button">Abrir apuestas</button>
+        </div>
+      </div>
+
+      <div class="tabla-sala">
+        <h2>Jugadores</h2>
+        <ol id="lista-jugadores" class="tabla"></ol>
+      </div>
+
+      <div class="stage-btns">
+        <button id="btn-salir" class="btn ghost small" type="button">Salir de la sala</button>
+      </div>
+    </section>
+  </main>
+
+  <script src="js/data.js"></script>
+  <script src="js/engine.js"></script>
+  <script src="js/armas.js"></script>
+  <script src="js/golpes.js"></script>
+  <script src="js/fight.js"></script>
+  <script src="js/firebase-config.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/firebase@10.12.2/firebase-app-compat.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/firebase@10.12.2/firebase-auth-compat.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/firebase@10.12.2/firebase-database-compat.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <script src="js/sala.js"></script>
+</body>
+</html>

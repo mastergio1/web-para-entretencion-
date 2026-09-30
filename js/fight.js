@@ -6,11 +6,27 @@
  */
 const pelea = { actual: null };
 
+/*
+ * Fuente de azar de la pelea. Normalmente es Math.random; en el modo en línea
+ * se usa un generador con semilla para que todos los celulares vean la misma pelea.
+ */
+let azar = Math.random;
+
+function generadorConSemilla(semilla) {
+  let t = semilla >>> 0;
+  return () => {
+    t = (t + 0x6d2b79f5) >>> 0;
+    let r = Math.imul(t ^ (t >>> 15), 1 | t);
+    r = (r + Math.imul(r ^ (r >>> 7), 61 | r)) ^ r;
+    return ((r ^ (r >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
 function rand(min, max) {
-  return min + Math.random() * (max - min);
+  return min + azar() * (max - min);
 }
 function elegir(arr) {
-  return arr[Math.floor(Math.random() * arr.length)];
+  return arr[Math.floor(azar() * arr.length)];
 }
 function clamp(x, lo, hi) {
   return Math.max(lo, Math.min(hi, x));
@@ -29,17 +45,17 @@ function repartir(total, n, finalFuerte) {
 
 /* Guion completo de la pelea: quién pega, cuánto y cuándo pasan cosas absurdas. */
 function guion(p) {
-  const ganaA = Math.random() < p;
+  const ganaA = azar() < p;
   const W = ganaA ? "a" : "b";
   const L = ganaA ? "b" : "a";
   const pW = ganaA ? p : 1 - p;
   const hpFinalW =
     pW >= 0.5 ? Math.round(clamp(8 + (pW - 0.5) * 170 * rand(0.6, 1.1), 6, 96)) : Math.round(rand(4, 22));
 
-  const n = 4 + Math.floor(Math.random() * 4);
+  const n = 4 + Math.floor(azar() * 4);
   const seq = [];
-  for (let i = 0; i < n - 1; i++) seq.push(Math.random() < 0.45 + (pW - 0.5) * 0.7 ? W : L);
-  if (!seq.includes(L)) seq[Math.floor(Math.random() * seq.length)] = L;
+  for (let i = 0; i < n - 1; i++) seq.push(azar() < 0.45 + (pW - 0.5) * 0.7 ? W : L);
+  if (!seq.includes(L)) seq[Math.floor(azar() * seq.length)] = L;
   seq.push(W);
 
   const danoW = repartir(100, seq.filter((s) => s === W).length, true);
@@ -151,7 +167,31 @@ function sinEmojiInicial(t) {
  * Corre la animación dentro de `cont`. Devuelve una promesa con el resultado,
  * o null si se canceló porque empezó otra pelea.
  */
-async function animarPelea(cont, a, b, arena, armas) {
+/*
+ * Decide todo lo que importa de la pelea ANTES de animarla: quién logra usar su arma
+ * y el guion (quién gana y cómo). Usa `azar`, así que con la misma semilla da lo mismo.
+ */
+function prepararPelea(a, b, arena, armas) {
+  const usa = {
+    a: !!armas.a && azar() < probUsoArma(a, armas.a),
+    b: !!armas.b && azar() < probUsoArma(b, armas.b),
+  };
+  const pReal = probConUso(a, b, arena, armas.a, armas.b, usa.a, usa.b);
+  const g = guion(pReal);
+  g.sorpresa = g.pW < 0.4;
+  return { usa, pReal, g };
+}
+
+/* Resultado de una pelea con semilla, sin animación (el anfitrión lo usa para los puntos). */
+function resultadoConSemilla(a, b, arena, armas, semilla) {
+  const antes = azar;
+  azar = generadorConSemilla(semilla);
+  const r = prepararPelea(a, b, arena, armas);
+  azar = antes;
+  return { ganador: r.g.ganador, usa: r.usa, sorpresa: r.g.sorpresa };
+}
+
+async function animarPelea(cont, a, b, arena, armas, semilla = null) {
   if (pelea.actual) pelea.actual.cancelar();
 
   const ctrl = { skip: false, cancelado: false, esperas: [] };
@@ -176,14 +216,8 @@ async function animarPelea(cont, a, b, arena, armas) {
           });
         });
 
-  // ¿Sabrán usar el arma? Se decide antes, y define la probabilidad real de esta pelea.
-  const usa = {
-    a: !!armas.a && Math.random() < probUsoArma(a, armas.a),
-    b: !!armas.b && Math.random() < probUsoArma(b, armas.b),
-  };
-  const pReal = probConUso(a, b, arena, armas.a, armas.b, usa.a, usa.b);
-  const g = guion(pReal);
-  g.sorpresa = g.pW < 0.4;
+  azar = semilla != null ? generadorConSemilla(semilla) : Math.random;
+  const { usa, g } = prepararPelea(a, b, arena, armas);
   const L = { a, b };
   const ui = montarEscenario(cont, a, b, arena, armas);
   const vida = { a: 100, b: 100 };
@@ -251,10 +285,10 @@ async function animarPelea(cont, a, b, arena, armas) {
     const t = g.turnos[i];
     const atk = t.quien;
     const def = atk === "a" ? "b" : "a";
-    const conElArma = usa[atk] && Math.random() < (ARMAS[armas[atk]].legendaria ? 0.85 : 0.55);
+    const conElArma = usa[atk] && azar() < (ARMAS[armas[atk]].legendaria ? 0.85 : 0.55);
     const esHumano = L[atk].categoria === "humano" || L[atk].categoria === "paises";
     const golpe = conElArma
-      ? [ARMAS[armas[atk]].golpe + (!esHumano && Math.random() < 0.5 ? " (nadie entiende cómo lo sostiene)" : ""), ARMAS[armas[atk]].emoji]
+      ? [ARMAS[armas[atk]].golpe + (!esHumano && azar() < 0.5 ? " (nadie entiende cómo lo sostiene)" : ""), ARMAS[armas[atk]].emoji]
       : elegir(GOLPES[L[atk].id] || GOLPES_CATEGORIA[L[atk].categoria]);
     const critico = t.dano >= 35;
     const ultimo = i === g.turnos.length - 1;
@@ -321,7 +355,7 @@ async function animarPelea(cont, a, b, arena, armas) {
 
     await esperar(ultimo ? 700 : 1100);
 
-    if (!ultimo && Math.random() < 0.22) {
+    if (!ultimo && azar() < 0.22) {
       decir(elegir([...EVENTOS.general, ...(EVENTOS[arena] || [])]));
       await esperar(1700);
     }

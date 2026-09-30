@@ -203,7 +203,7 @@ function fraseArma(f, armaId, usa) {
   else if (f.categoria === "bichos") tipo = "falloBicho";
   else tipo = "falloAnimal";
   const lista = FRASES_ARMA[tipo];
-  return lista[Math.floor(Math.random() * lista.length)]
+  return lista[Math.floor(azar() * lista.length)]
     .replaceAll("{n}", `<b>${f.nombre}</b>`)
     .replaceAll("{a}", w.articulo)
     .replaceAll("{arma}", w.nombre.toLowerCase())
