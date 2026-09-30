@@ -7,6 +7,7 @@ Elige dos luchadores (animales de sabana, selva, agua, nieve, aire, bichos y enj
 ## Qué se puede hacer
 
 - **Pelea 1 contra 1** animada, con armas rudimentarias y legendarias.
+- **Jugar en línea (`sala.html`):** uno crea una sala, los demás entran desde su celular con un código de 5 letras o un QR. Todos apuestan y ven la misma pelea al mismo tiempo; los puntos se actualizan en vivo. Usa Firebase Realtime Database.
 - **Modo fiesta:** anoten sus nombres, apuesten antes de cada pelea y la web lleva los puntos (se guarda en el dispositivo).
 - **Torneo de la noche:** 8 luchadores al azar, eliminación directa hasta el campeón.
 - **Lo que opina la gente:** los duelos más votados y los más polémicos. Abierta desde Claude, suma los votos de todos; en otro lugar, los de ese dispositivo.
@@ -15,6 +16,12 @@ Elige dos luchadores (animales de sabana, selva, agua, nieve, aire, bichos y enj
 ## Cómo usarla
 
 Es una web estática, sin instalación: abre `index.html` en el navegador.
+
+### Modo en línea (Firebase)
+
+- La configuración pública está en `js/firebase-config.js`.
+- En la consola de Firebase hay que activar **Authentication → Anónimo** y pegar el contenido de `firebase-reglas.json` en **Realtime Database → Reglas**.
+- Solo funciona desde la web publicada (GitHub Pages), no dentro de Claude.
 
 ### Publicarla gratis con GitHub Pages
 
@@ -34,6 +41,7 @@ Es una web estática, sin instalación: abre `index.html` en el navegador.
 | `js/votos.js` | Votos: compartidos (dentro de Claude) o en el dispositivo. |
 | `js/fiesta.js` | Modo fiesta: jugadores, apuestas y puntos. |
 | `js/torneo.js` | Torneo de 8 luchadores. |
+| `js/sala.js` | Modo en línea: salas, apuestas y pelea sincronizada con Firebase. |
 | `js/app.js` | Interfaz: selector, resultado, votos, enciclopedia. |
 | `css/styles.css` | Estilos (responsive). |
 

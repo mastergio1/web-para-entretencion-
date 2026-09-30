@@ -492,6 +492,12 @@ $("#picker").addEventListener("click", (e) => {
   if (e.target === e.currentTarget) e.currentTarget.close();
 });
 
+// El modo en línea necesita Firebase, que solo funciona desde la web publicada (GitHub Pages)
+if (location.protocol !== "file:" && !/github\.io$|^localhost$|^127\.0\.0\.1$/.test(location.hostname)) {
+  $("#link-online").href = "https://mastergio1.github.io/web-para-entretencion-/sala.html";
+  $("#link-online").target = "_blank";
+}
+
 initArmas();
 renderArenas();
 renderSlots();

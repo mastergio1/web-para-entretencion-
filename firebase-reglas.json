@@ -1,0 +1,24 @@
+{
+  "rules": {
+    "salas": {
+      "$sala": {
+        ".read": "auth != null",
+        ".write": "auth != null && (!data.exists() || data.child('host').val() === auth.uid)",
+        "jugadores": {
+          "$uid": {
+            ".write": "auth != null && auth.uid === $uid",
+            ".validate": "newData.child('nombre').isString() && newData.child('nombre').val().length > 0 && newData.child('nombre').val().length <= 20"
+          }
+        },
+        "apuestas": {
+          "$ronda": {
+            "$uid": {
+              ".write": "auth != null && auth.uid === $uid && root.child('salas').child($sala).child('estado').val() === 'apuestas'",
+              ".validate": "newData.val() === 'a' || newData.val() === 'b'"
+            }
+          }
+        }
+      }
+    }
+  }
+}
